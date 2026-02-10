@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import '../models/platform.dart';
+import '../models/authorization_result.dart';
 import '../services/platform_service.dart';
 import '../widgets/platform_selector.dart';
 import '../core/theme/app_colors.dart';
+import 'platform_authorization_screen.dart';
 
 class PlatformSelectionScreen extends StatefulWidget {
   const PlatformSelectionScreen({super.key});
@@ -56,13 +58,90 @@ class _PlatformSelectionScreenState extends State<PlatformSelectionScreen> {
     });
   }
 
-  void _handleSelectPlaylists() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          'Transferring from ${_sourcePlatform!.name} to ${_destinationPlatform!.name}',
+  Future<void> _handleSelectPlaylists() async {
+    final sourceResult = await Navigator.push<AuthorizationResult>(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PlatformAuthorizationScreen(
+          platform: _sourcePlatform!,
+          isSource: true,
         ),
-        backgroundColor: AppColors.primaryBlue,
+      ),
+    );
+
+    if (sourceResult == null || !sourceResult.isAuthorized) {
+      if (mounted) {
+        _showAuthorizationError(
+          sourceResult?.platform.name ?? _sourcePlatform!.name,
+          sourceResult?.errorMessage ?? 'Authorization was cancelled',
+        );
+      }
+      return;
+    }
+
+    if (!mounted) return;
+
+    final destinationResult = await Navigator.push<AuthorizationResult>(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PlatformAuthorizationScreen(
+          platform: _destinationPlatform!,
+          isSource: false,
+        ),
+      ),
+    );
+
+    if (destinationResult == null || !destinationResult.isAuthorized) {
+      if (mounted) {
+        _showAuthorizationError(
+          destinationResult?.platform.name ?? _destinationPlatform!.name,
+          destinationResult?.errorMessage ?? 'Authorization was cancelled',
+        );
+      }
+      return;
+    }
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Both platforms authorized! Ready to select playlists.',
+          ),
+          backgroundColor: AppColors.primaryBlue,
+        ),
+      );
+    }
+  }
+
+  void _showAuthorizationError(String platformName, String message) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppColors.background,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Text(
+          'Authorization Failed',
+          style: TextStyle(
+            color: AppColors.darkBlue,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        content: Text(
+          'Could not authorize $platformName: $message',
+          style: TextStyle(color: AppColors.darkBlue),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              'OK',
+              style: TextStyle(
+                color: AppColors.primaryBlue,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

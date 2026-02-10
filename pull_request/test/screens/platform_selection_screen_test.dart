@@ -99,7 +99,7 @@ void main() {
       expect(spotifyCards, findsWidgets);
     });
 
-    testWidgets('shows snackbar when Select Playlists is tapped', (
+    testWidgets('navigates to authorization when Select Playlists is tapped', (
       tester,
     ) async {
       await tester.pumpWidget(
@@ -119,11 +119,8 @@ void main() {
       await tester.tap(find.text('Select Playlists'));
       await tester.pumpAndSettle();
 
-      expect(find.byType(SnackBar), findsOneWidget);
-      expect(
-        find.text('Transferring from Spotify to YouTube Music'),
-        findsOneWidget,
-      );
+      expect(find.text('Connect to Spotify'), findsOneWidget);
+      expect(find.text('Authorize with Spotify'), findsOneWidget);
     });
 
     testWidgets('back button navigates back', (tester) async {

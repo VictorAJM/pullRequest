@@ -9,6 +9,7 @@ class PlatformSelector extends StatelessWidget {
   final List<Platform> availablePlatforms;
   final List<String> disabledPlatformIds;
   final Function(Platform) onPlatformSelected;
+  final VoidCallback? onClear;
 
   const PlatformSelector({
     super.key,
@@ -17,47 +18,59 @@ class PlatformSelector extends StatelessWidget {
     required this.availablePlatforms,
     required this.disabledPlatformIds,
     required this.onPlatformSelected,
+    this.onClear,
   });
 
   void _showPlatformPicker(BuildContext context) {
-    showModalBottomSheet(
+    showDialog(
       context: context,
-      backgroundColor: AppColors.background,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (context) => Container(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Select Platform',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w600,
-                color: AppColors.darkBlue,
+      builder: (context) => Dialog(
+        backgroundColor: AppColors.background,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Select Platform',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.darkBlue,
+                    ),
+                  ),
+                  IconButton(
+                    icon: Icon(Icons.close, color: AppColors.darkBlue),
+                    onPressed: () => Navigator.pop(context),
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                  ),
+                ],
               ),
-            ),
-            const SizedBox(height: 20),
-            ...availablePlatforms.map((platform) {
-              final isDisabled = disabledPlatformIds.contains(platform.id);
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 12),
-                child: PlatformCard(
-                  platform: platform,
-                  isDisabled: isDisabled,
-                  onTap: isDisabled
-                      ? null
-                      : () {
-                          onPlatformSelected(platform);
-                          Navigator.pop(context);
-                        },
-                ),
-              );
-            }),
-          ],
+              const SizedBox(height: 20),
+              ...availablePlatforms.map((platform) {
+                final isDisabled = disabledPlatformIds.contains(platform.id);
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: PlatformCard(
+                    platform: platform,
+                    isDisabled: isDisabled,
+                    onTap: isDisabled
+                        ? null
+                        : () {
+                            onPlatformSelected(platform);
+                            Navigator.pop(context);
+                          },
+                  ),
+                );
+              }),
+            ],
+          ),
         ),
       ),
     );
@@ -87,6 +100,7 @@ class PlatformSelector extends StatelessWidget {
             GestureDetector(
               onTap: () => _showPlatformPicker(context),
               child: Container(
+                width: double.infinity,
                 padding: const EdgeInsets.symmetric(
                   horizontal: 16,
                   vertical: 12,
@@ -97,7 +111,6 @@ class PlatformSelector extends StatelessWidget {
                   border: Border.all(color: AppColors.darkBlue, width: 2),
                 ),
                 child: Row(
-                  mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(
                       Icons.add_circle_outline,
@@ -123,6 +136,7 @@ class PlatformSelector extends StatelessWidget {
               child: PlatformCard(
                 platform: selectedPlatform!,
                 isSelected: true,
+                onClear: onClear,
               ),
             ),
         ],

@@ -44,6 +44,18 @@ class _PlatformSelectionScreenState extends State<PlatformSelectionScreen> {
     });
   }
 
+  void _handleClearSource() {
+    setState(() {
+      _sourcePlatform = null;
+    });
+  }
+
+  void _handleClearDestination() {
+    setState(() {
+      _destinationPlatform = null;
+    });
+  }
+
   void _handleSelectPlaylists() {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -89,6 +101,7 @@ class _PlatformSelectionScreenState extends State<PlatformSelectionScreen> {
                 availablePlatforms: platforms,
                 disabledPlatformIds: _disabledSourcePlatforms,
                 onPlatformSelected: _handleSourceSelection,
+                onClear: _handleClearSource,
               ),
               const SizedBox(height: 24),
               Icon(Icons.arrow_downward, size: 32, color: AppColors.darkBlue),
@@ -99,6 +112,7 @@ class _PlatformSelectionScreenState extends State<PlatformSelectionScreen> {
                 availablePlatforms: platforms,
                 disabledPlatformIds: _disabledDestinationPlatforms,
                 onPlatformSelected: _handleDestinationSelection,
+                onClear: _handleClearDestination,
               ),
               const Spacer(),
               SizedBox(

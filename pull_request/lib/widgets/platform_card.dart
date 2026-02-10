@@ -7,6 +7,7 @@ class PlatformCard extends StatelessWidget {
   final bool isSelected;
   final bool isDisabled;
   final VoidCallback? onTap;
+  final VoidCallback? onClear;
 
   const PlatformCard({
     super.key,
@@ -14,6 +15,7 @@ class PlatformCard extends StatelessWidget {
     this.isSelected = false,
     this.isDisabled = false,
     this.onTap,
+    this.onClear,
   });
 
   @override
@@ -21,6 +23,7 @@ class PlatformCard extends StatelessWidget {
     return GestureDetector(
       onTap: isDisabled ? null : onTap,
       child: Container(
+        width: double.infinity,
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
           color: isSelected ? AppColors.primaryBlue : Colors.white,
@@ -31,7 +34,6 @@ class PlatformCard extends StatelessWidget {
           ),
         ),
         child: Row(
-          mainAxisSize: MainAxisSize.min,
           children: [
             Opacity(
               opacity: isDisabled ? 0.4 : 1.0,
@@ -53,6 +55,12 @@ class PlatformCard extends StatelessWidget {
                     : (isDisabled ? Colors.grey : AppColors.darkBlue),
               ),
             ),
+            const Spacer(),
+            if (isSelected && onClear != null)
+              GestureDetector(
+                onTap: onClear,
+                child: Icon(Icons.close, color: Colors.white, size: 20),
+              ),
           ],
         ),
       ),

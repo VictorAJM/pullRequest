@@ -5,6 +5,7 @@ import '../services/platform_service.dart';
 import '../widgets/platform_selector.dart';
 import '../core/theme/app_colors.dart';
 import 'platform_authorization_screen.dart';
+import 'playlist_selection_screen.dart';
 
 class PlatformSelectionScreen extends StatefulWidget {
   const PlatformSelectionScreen({super.key});
@@ -101,11 +102,22 @@ class _PlatformSelectionScreenState extends State<PlatformSelectionScreen> {
       return;
     }
 
-    if (mounted) {
+    if (!mounted) return;
+
+    // Both platforms authorized, navigate to playlist selection
+    final selectedPlaylists = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) =>
+            PlaylistSelectionScreen(platform: _sourcePlatform!, isSource: true),
+      ),
+    );
+
+    if (selectedPlaylists != null && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'Both platforms authorized! Ready to select playlists.',
+            'Ready to transfer ${selectedPlaylists.length} playlist${selectedPlaylists.length == 1 ? '' : 's'}!',
           ),
           backgroundColor: AppColors.primaryBlue,
         ),

@@ -1,0 +1,82 @@
+[
+  {
+    "id": "spotify_1",
+    "name": "Chill Vibes",
+    "description": "Relaxing tunes for a calm evening",
+    "trackCount": 45,
+    "imageUrl": null,
+    "platformId": "spotify"
+  },
+  {
+    "id": "spotify_2",
+    "name": "Workout Mix",
+    "description": "High energy tracks to power through your workout",
+    "trackCount": 32,
+    "imageUrl": null,
+    "platformId": "spotify"
+  },
+  {
+    "id": "spotify_3",
+    "name": "Road Trip Classics",
+    "description": "The best songs for long drives",
+    "trackCount": 67,
+    "imageUrl": null,
+    "platformId": "spotify"
+  },
+  {
+    "id": "spotify_4",
+    "name": "Focus Flow",
+    "description": "Instrumental music for deep concentration",
+    "trackCount": 28,
+    "imageUrl": null,
+    "platformId": "spotify"
+  },
+  {
+    "id": "spotify_5",
+    "name": "Party Hits 2024",
+    "description": "The hottest party tracks of the year",
+    "trackCount": 54,
+    "imageUrl": null,
+    "platformId": "spotify"
+  },
+  {
+    "id": "spotify_6",
+    "name": "Morning Coffee",
+    "description": "Gentle acoustic songs to start your day",
+    "trackCount": 21,
+    "imageUrl": null,
+    "platformId": "spotify"
+  },
+  {
+    "id": "spotify_7",
+    "name": "90s Nostalgia",
+    "description": "All the hits from the best decade",
+    "trackCount": 89,
+    "imageUrl": null,
+    "platformId": "spotify"
+  },
+  {
+    "id": "spotify_8",
+    "name": "Jazz Essentials",
+    "description": "Classic and contemporary jazz favorites",
+    "trackCount": 41,
+    "imageUrl": null,
+    "platformId": "spotify"
+  },
+  {
+    "id": "spotify_9",
+    "name": "Late Night Drives",
+    "description": "Moody tracks for nighttime cruising",
+    "trackCount": 36,
+    "imageUrl": null,
+    "platformId": "spotify"
+  },
+  {
+    "id": "spotify_10",
+    "name": "Indie Discoveries",
+    "description": "Hidden gems from independent artists",
+    "trackCount": 52,
+    "imageUrl": null,
+    "platformId": "spotify"
+  }
+]

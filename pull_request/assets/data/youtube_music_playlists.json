@@ -1,0 +1,82 @@
+[
+  {
+    "id": "ytmusic_1",
+    "name": "Discover Weekly Mix",
+    "description": "Your personalized music discovery playlist",
+    "trackCount": 50,
+    "imageUrl": null,
+    "platformId": "youtube_music"
+  },
+  {
+    "id": "ytmusic_2",
+    "name": "Gaming Soundtrack",
+    "description": "Epic music from your favorite games",
+    "trackCount": 38,
+    "imageUrl": null,
+    "platformId": "youtube_music"
+  },
+  {
+    "id": "ytmusic_3",
+    "name": "Study Sessions",
+    "description": "Lo-fi beats and ambient sounds for studying",
+    "trackCount": 44,
+    "imageUrl": null,
+    "platformId": "youtube_music"
+  },
+  {
+    "id": "ytmusic_4",
+    "name": "Rock Anthems",
+    "description": "The greatest rock songs of all time",
+    "trackCount": 72,
+    "imageUrl": null,
+    "platformId": "youtube_music"
+  },
+  {
+    "id": "ytmusic_5",
+    "name": "Summer Vibes 2024",
+    "description": "Feel-good tracks for sunny days",
+    "trackCount": 48,
+    "imageUrl": null,
+    "platformId": "youtube_music"
+  },
+  {
+    "id": "ytmusic_6",
+    "name": "Hip Hop Essentials",
+    "description": "Classic and modern hip hop hits",
+    "trackCount": 61,
+    "imageUrl": null,
+    "platformId": "youtube_music"
+  },
+  {
+    "id": "ytmusic_7",
+    "name": "Acoustic Covers",
+    "description": "Beautiful acoustic versions of popular songs",
+    "trackCount": 29,
+    "imageUrl": null,
+    "platformId": "youtube_music"
+  },
+  {
+    "id": "ytmusic_8",
+    "name": "Electronic Dreams",
+    "description": "The best in electronic and EDM music",
+    "trackCount": 55,
+    "imageUrl": null,
+    "platformId": "youtube_music"
+  },
+  {
+    "id": "ytmusic_9",
+    "name": "Country Roads",
+    "description": "Modern and classic country favorites",
+    "trackCount": 42,
+    "imageUrl": null,
+    "platformId": "youtube_music"
+  },
+  {
+    "id": "ytmusic_10",
+    "name": "Sleep Soundly",
+    "description": "Calming music for a peaceful night's rest",
+    "trackCount": 25,
+    "imageUrl": null,
+    "platformId": "youtube_music"
+  }
+]

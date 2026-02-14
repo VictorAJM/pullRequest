@@ -1,6 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pull_request/services/playlist_service.dart';
-import 'package:pull_request/models/playlist.dart';
 
 void main() {
   group('PlaylistService', () {

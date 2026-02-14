@@ -6,6 +6,7 @@ import '../widgets/platform_selector.dart';
 import '../core/theme/app_colors.dart';
 import 'platform_authorization_screen.dart';
 import 'playlist_selection_screen.dart';
+import 'playlist_transfer_screen.dart';
 
 class PlatformSelectionScreen extends StatefulWidget {
   const PlatformSelectionScreen({super.key});
@@ -113,13 +114,16 @@ class _PlatformSelectionScreenState extends State<PlatformSelectionScreen> {
       ),
     );
 
-    if (selectedPlaylists != null && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Ready to transfer ${selectedPlaylists.length} playlist${selectedPlaylists.length == 1 ? '' : 's'}!',
+    if (selectedPlaylists != null && selectedPlaylists.isNotEmpty && mounted) {
+      // Navigate to transfer screen
+      await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => PlaylistTransferScreen(
+            selectedPlaylists: selectedPlaylists,
+            sourcePlatform: _sourcePlatform!,
+            destinationPlatform: _destinationPlatform!,
           ),
-          backgroundColor: AppColors.primaryBlue,
         ),
       );
     }

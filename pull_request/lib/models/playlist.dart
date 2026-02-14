@@ -1,3 +1,5 @@
+import 'song.dart';
+
 class Playlist {
   final String id;
   final String name;
@@ -5,6 +7,7 @@ class Playlist {
   final int trackCount;
   final String? imageUrl;
   final String platformId;
+  final List<Song> songs;
 
   const Playlist({
     required this.id,
@@ -13,6 +16,7 @@ class Playlist {
     required this.trackCount,
     this.imageUrl,
     required this.platformId,
+    this.songs = const [],
   });
 
   factory Playlist.fromJson(Map<String, dynamic> json) {
@@ -23,6 +27,13 @@ class Playlist {
       trackCount: json['trackCount'] as int,
       imageUrl: json['imageUrl'] as String?,
       platformId: json['platformId'] as String,
+      songs:
+          (json['songs'] as List<dynamic>?)
+              ?.map(
+                (songJson) => Song.fromJson(songJson as Map<String, dynamic>),
+              )
+              .toList() ??
+          [],
     );
   }
 
@@ -34,6 +45,7 @@ class Playlist {
       'trackCount': trackCount,
       'imageUrl': imageUrl,
       'platformId': platformId,
+      'songs': songs.map((song) => song.toJson()).toList(),
     };
   }
 

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/playlist.dart';
 import '../core/theme/app_colors.dart';
+import '../screens/playlist_details_screen.dart';
 
 class PlaylistCard extends StatelessWidget {
   final Playlist playlist;
@@ -13,6 +14,15 @@ class PlaylistCard extends StatelessWidget {
     this.isSelected = false,
     this.onTap,
   });
+
+  void _showPlaylistDetails(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PlaylistDetailsScreen(playlist: playlist),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -86,6 +96,13 @@ class PlaylistCard extends StatelessWidget {
                   ],
                 ],
               ),
+            ),
+            const SizedBox(width: 8),
+            // Info button
+            IconButton(
+              icon: Icon(Icons.info_outline, color: AppColors.primaryBlue),
+              onPressed: () => _showPlaylistDetails(context),
+              tooltip: 'View songs',
             ),
           ],
         ),

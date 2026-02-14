@@ -3,80 +3,239 @@
     "id": "spotify_1",
     "name": "Chill Vibes",
     "description": "Relaxing tunes for a calm evening",
-    "trackCount": 45,
+    "trackCount": 5,
     "imageUrl": null,
-    "platformId": "spotify"
+    "platformId": "spotify",
+    "songs": [
+      {
+        "id": "song_1_1",
+        "title": "Sunset Dreams",
+        "artist": "Coastal Waves",
+        "album": "Ocean Breeze",
+        "durationSeconds": 245
+      },
+      {
+        "id": "song_1_2",
+        "title": "Lazy Afternoon",
+        "artist": "The Mellows",
+        "album": "Soft Sounds",
+        "durationSeconds": 198
+      },
+      {
+        "id": "song_1_3",
+        "title": "Peaceful Mind",
+        "artist": "Zen Garden",
+        "album": "Tranquility",
+        "durationSeconds": 312
+      },
+      {
+        "id": "song_1_4",
+        "title": "Gentle Rain",
+        "artist": "Nature Sounds Collective",
+        "album": "Elements",
+        "durationSeconds": 267
+      },
+      {
+        "id": "song_1_5",
+        "title": "Moonlight Serenade",
+        "artist": "Night Owls",
+        "album": "After Dark",
+        "durationSeconds": 221
+      }
+    ]
   },
   {
     "id": "spotify_2",
     "name": "Workout Mix",
     "description": "High energy tracks to power through your workout",
-    "trackCount": 32,
+    "trackCount": 6,
     "imageUrl": null,
-    "platformId": "spotify"
+    "platformId": "spotify",
+    "songs": [
+      {
+        "id": "song_2_1",
+        "title": "Power Up",
+        "artist": "Gym Beats",
+        "album": "Motivation",
+        "durationSeconds": 189
+      },
+      {
+        "id": "song_2_2",
+        "title": "Run Wild",
+        "artist": "Energy Squad",
+        "album": "High Intensity",
+        "durationSeconds": 203
+      },
+      {
+        "id": "song_2_3",
+        "title": "Beast Mode",
+        "artist": "Iron Will",
+        "album": "Unstoppable",
+        "durationSeconds": 195
+      },
+      {
+        "id": "song_2_4",
+        "title": "Push Harder",
+        "artist": "Fitness Crew",
+        "album": "No Limits",
+        "durationSeconds": 178
+      },
+      {
+        "id": "song_2_5",
+        "title": "Victory Lap",
+        "artist": "Champions",
+        "album": "Winners",
+        "durationSeconds": 212
+      },
+      {
+        "id": "song_2_6",
+        "title": "Adrenaline Rush",
+        "artist": "Pulse",
+        "album": "Maximum Energy",
+        "durationSeconds": 186
+      }
+    ]
   },
   {
     "id": "spotify_3",
     "name": "Road Trip Classics",
     "description": "The best songs for long drives",
-    "trackCount": 67,
+    "trackCount": 7,
     "imageUrl": null,
-    "platformId": "spotify"
+    "platformId": "spotify",
+    "songs": [
+      {
+        "id": "song_3_1",
+        "title": "Highway Dreams",
+        "artist": "The Wanderers",
+        "album": "Open Road",
+        "durationSeconds": 254
+      },
+      {
+        "id": "song_3_2",
+        "title": "Born to Ride",
+        "artist": "Freedom Riders",
+        "album": "Journey",
+        "durationSeconds": 289
+      },
+      {
+        "id": "song_3_3",
+        "title": "Summer Breeze",
+        "artist": "Coastal Highway",
+        "album": "Endless Summer",
+        "durationSeconds": 234
+      },
+      {
+        "id": "song_3_4",
+        "title": "Take Me Home",
+        "artist": "Country Roads",
+        "album": "Homeward Bound",
+        "durationSeconds": 276
+      },
+      {
+        "id": "song_3_5",
+        "title": "Life is a Highway",
+        "artist": "Road Warriors",
+        "album": "Classic Hits",
+        "durationSeconds": 298
+      },
+      {
+        "id": "song_3_6",
+        "title": "Don't Stop Believin'",
+        "artist": "Journey Tribute",
+        "album": "Greatest Hits",
+        "durationSeconds": 251
+      },
+      {
+        "id": "song_3_7",
+        "title": "Sweet Home Alabama",
+        "artist": "Southern Rock Band",
+        "album": "Legends",
+        "durationSeconds": 283
+      }
+    ]
   },
   {
     "id": "spotify_4",
     "name": "Focus Flow",
     "description": "Instrumental music for deep concentration",
-    "trackCount": 28,
+    "trackCount": 4,
     "imageUrl": null,
-    "platformId": "spotify"
+    "platformId": "spotify",
+    "songs": [
+      {
+        "id": "song_4_1",
+        "title": "Deep Focus",
+        "artist": "Study Music Project",
+        "album": "Concentration",
+        "durationSeconds": 342
+      },
+      {
+        "id": "song_4_2",
+        "title": "Ambient Thoughts",
+        "artist": "Mindful Melodies",
+        "album": "Clarity",
+        "durationSeconds": 387
+      },
+      {
+        "id": "song_4_3",
+        "title": "Piano Reflections",
+        "artist": "Classical Focus",
+        "album": "Study Sessions",
+        "durationSeconds": 298
+      },
+      {
+        "id": "song_4_4",
+        "title": "Lofi Beats",
+        "artist": "Chill Hop Collective",
+        "album": "Study Vibes",
+        "durationSeconds": 256
+      }
+    ]
   },
   {
     "id": "spotify_5",
     "name": "Party Hits 2024",
     "description": "The hottest party tracks of the year",
-    "trackCount": 54,
+    "trackCount": 5,
     "imageUrl": null,
-    "platformId": "spotify"
-  },
-  {
-    "id": "spotify_6",
-    "name": "Morning Coffee",
-    "description": "Gentle acoustic songs to start your day",
-    "trackCount": 21,
-    "imageUrl": null,
-    "platformId": "spotify"
-  },
-  {
-    "id": "spotify_7",
-    "name": "90s Nostalgia",
-    "description": "All the hits from the best decade",
-    "trackCount": 89,
-    "imageUrl": null,
-    "platformId": "spotify"
-  },
-  {
-    "id": "spotify_8",
-    "name": "Jazz Essentials",
-    "description": "Classic and contemporary jazz favorites",
-    "trackCount": 41,
-    "imageUrl": null,
-    "platformId": "spotify"
-  },
-  {
-    "id": "spotify_9",
-    "name": "Late Night Drives",
-    "description": "Moody tracks for nighttime cruising",
-    "trackCount": 36,
-    "imageUrl": null,
-    "platformId": "spotify"
-  },
-  {
-    "id": "spotify_10",
-    "name": "Indie Discoveries",
-    "description": "Hidden gems from independent artists",
-    "trackCount": 52,
-    "imageUrl": null,
-    "platformId": "spotify"
+    "platformId": "spotify",
+    "songs": [
+      {
+        "id": "song_5_1",
+        "title": "Dance All Night",
+        "artist": "DJ Pulse",
+        "album": "Club Anthems",
+        "durationSeconds": 198
+      },
+      {
+        "id": "song_5_2",
+        "title": "Electric Feel",
+        "artist": "Neon Lights",
+        "album": "Party Mode",
+        "durationSeconds": 215
+      },
+      {
+        "id": "song_5_3",
+        "title": "Turn It Up",
+        "artist": "Bass Boosted",
+        "album": "Maximum Volume",
+        "durationSeconds": 187
+      },
+      {
+        "id": "song_5_4",
+        "title": "Celebration",
+        "artist": "Party People",
+        "album": "Good Times",
+        "durationSeconds": 223
+      },
+      {
+        "id": "song_5_5",
+        "title": "Weekend Vibes",
+        "artist": "Friday Night Crew",
+        "album": "Let's Go",
+        "durationSeconds": 201
+      }
+    ]
   }
 ]

@@ -89,19 +89,33 @@ class _PlaylistSelectionScreenState extends State<PlaylistSelectionScreen> {
     });
   }
 
-  void _selectAll() {
+  void _toggleSelectAll() {
     setState(() {
-      _selectedPlaylistIds.clear();
-      _selectedPlaylistIds.addAll(
-        _filteredPlaylists.map((playlist) => playlist.id),
+      // If all filtered playlists are selected, deselect all
+      // Otherwise, select all filtered playlists
+      final allFilteredSelected = _filteredPlaylists.every(
+        (playlist) => _selectedPlaylistIds.contains(playlist.id),
       );
+
+      if (allFilteredSelected) {
+        // Deselect all filtered playlists
+        for (final playlist in _filteredPlaylists) {
+          _selectedPlaylistIds.remove(playlist.id);
+        }
+      } else {
+        // Select all filtered playlists
+        _selectedPlaylistIds.addAll(
+          _filteredPlaylists.map((playlist) => playlist.id),
+        );
+      }
     });
   }
 
-  void _deselectAll() {
-    setState(() {
-      _selectedPlaylistIds.clear();
-    });
+  bool get _areAllFilteredSelected {
+    if (_filteredPlaylists.isEmpty) return false;
+    return _filteredPlaylists.every(
+      (playlist) => _selectedPlaylistIds.contains(playlist.id),
+    );
   }
 
   void _handleContinue() {
@@ -292,32 +306,30 @@ class _PlaylistSelectionScreenState extends State<PlaylistSelectionScreen> {
                     ),
                   ),
                 ),
-                // Select/Deselect all buttons
+                // Toggle select all button
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: Row(
                     children: [
                       TextButton.icon(
-                        onPressed: _selectAll,
-                        icon: const Icon(
-                          Icons.check_box,
-                          color: AppColors.primaryBlue,
+                        onPressed: _toggleSelectAll,
+                        icon: Icon(
+                          _areAllFilteredSelected
+                              ? Icons.check_box
+                              : Icons.check_box_outline_blank,
+                          color: _areAllFilteredSelected
+                              ? AppColors.primaryBlue
+                              : Colors.grey[600],
                         ),
-                        label: const Text(
-                          'Select All',
-                          style: TextStyle(color: AppColors.primaryBlue),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      TextButton.icon(
-                        onPressed: _deselectAll,
-                        icon: const Icon(
-                          Icons.check_box_outline_blank,
-                          color: Colors.grey,
-                        ),
-                        label: const Text(
-                          'Deselect All',
-                          style: TextStyle(color: Colors.grey),
+                        label: Text(
+                          _areAllFilteredSelected
+                              ? 'Deselect All'
+                              : 'Select All',
+                          style: TextStyle(
+                            color: _areAllFilteredSelected
+                                ? AppColors.primaryBlue
+                                : Colors.grey[600],
+                          ),
                         ),
                       ),
                     ],

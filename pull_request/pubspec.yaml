@@ -19,6 +19,18 @@ dependencies:
   # Declarative routing with deep-link support
   go_router: ^14.6.3
 
+  # OAuth browser launch + custom-scheme redirect interception
+  flutter_web_auth_2: ^4.0.1
+
+  # Encrypted token persistence (access + refresh tokens)
+  flutter_secure_storage: ^9.2.2
+
+  # HTTP client for token exchange and refresh grant calls
+  http: ^1.2.0
+
+  # SHA-256 for PKCE code challenge generation
+  crypto: ^3.0.3
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

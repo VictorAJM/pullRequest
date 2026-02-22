@@ -231,6 +231,87 @@ EPIC  PULL-10 — Spotify OAuth Integration
 
 
 ================================================================================
+  JIRA BACKLOG (continued)
+================================================================================
+
+EPIC  PULL-20 — Playlist Loading & Selection Flow
+  Goal: Wire the playlist screens so that, after OAuth, the user's real
+  playlists load correctly. The lazy detail-fetch pattern ensures the code
+  is ready for real Spotify/YouTube Music APIs where track lists are a
+  separate API call from the playlist catalogue.
+
+  ┌─────────────────────────────────────────────────────────────────────────┐
+  │ USER STORIES                                                            │
+  ├─────────────────────────────────────────────────────────────────────────┤
+  │ PULL-21  As a user, I can see my playlists from the source platform     │
+  │          listed after I authorize the app.                              │
+  │          Acceptance:                                                    │
+  │            - PlaylistSelectionScreen shows a skeleton while loading     │
+  │            - Playlists appear with name, track count, description       │
+  │            - An error message + Retry button is shown on failure        │
+  │                                                                         │
+  │ PULL-22  As a user, I can tap a playlist and view its full track list   │
+  │          with titles, artists, and durations.                           │
+  │          Acceptance:                                                    │
+  │            - Tapping the info button on a PlaylistCard opens details    │
+  │            - A LoadingSongCard skeleton shows while tracks fetch        │
+  │            - Songs are listed in order with track number, title,        │
+  │              artist, optional album, and formatted duration             │
+  │            - An error message + Retry button shows on failure           │
+  │                                                                         │
+  │ PULL-23  As a user, I can search and filter my playlists by name or    │
+  │          description so I can quickly find what I want to transfer.     │
+  │          Acceptance:                                                    │
+  │            - A search bar filters the list in real time                 │
+  │            - Clearing search restores the full list                     │
+  │            - "No playlists found" empty state shown when no match       │
+  └─────────────────────────────────────────────────────────────────────────┘
+
+  TASKS (sub-tasks of PULL-20)
+  ─────────────────────────────────────────────────────────────────────────
+  PULL-24  Extend PlaylistProvider with playlist-detail loading state      ✓
+             Type: Task | Points: 2
+             File: lib/providers/playlist_provider.dart
+             Details:
+               - Add _details, _loadingDetails, _detailErrors maps
+               - Add detailsFor(), isLoadingDetails(), detailErrorFor()
+               - Add loadPlaylistDetails(platformId, playlistId,
+                 {forceRefresh}) with same cache / error pattern as
+                 loadPlaylists()
+               - clearCache() now also resets detail cache and errors
+
+  PULL-25  Add LoadingSongCard skeleton widget                             ✓
+             Type: Task | Points: 1
+             File: lib/widgets/common/loading_song_card.dart
+             Details:
+               - Animated opacity shimmer matching SongCard dimensions
+               - Track-number box, two text-line placeholders, duration
+               - Follows exact same implementation pattern as
+                 LoadingPlaylistCard
+
+  PULL-26  Refactor PlaylistDetailsScreen to fetch tracks lazily           ✓
+             Type: Story | Points: 3
+             File: lib/screens/playlist_details_screen.dart
+             Details:
+               - Convert StatelessWidget → StatefulWidget
+               - initState triggers loadPlaylistDetails via PlaylistProvider
+               - Consumer<PlaylistProvider> drives isLoading / error / data
+               - Falls back to metadata playlist (name, description) while
+                 loading so the header renders immediately
+               - ErrorView + forceRefresh retry wired to provider
+
+  PULL-27  Unit tests for PlaylistProvider detail-loading state            ✓
+             Type: Task | Points: 3
+             File: test/providers/playlist_provider_test.dart
+             Coverage:
+               - loadPlaylistDetails stores result / cache hit / forceRefresh
+               - isLoadingDetails true during fetch, false after
+               - detailErrorFor set on PlaylistException, null on success
+               - clearCache resets list data, detail data, and detail errors
+               - Existing loadPlaylists caching and error paths validated
+
+
+================================================================================
   DEPENDENCY MANIFEST
 ================================================================================
 
@@ -299,7 +380,8 @@ EPIC  PULL-10 — Spotify OAuth Integration
   ├── widgets/
   │   ├── common/
   │   │   ├── error_view.dart           Reusable error + retry widget
-  │   │   └── loading_playlist_card.dart Skeleton loader
+  │   │   ├── loading_playlist_card.dart Skeleton loader (list view)
+  │   │   └── loading_song_card.dart    Skeleton loader (detail view)
   │   ├── platform_card.dart
   │   ├── platform_selector.dart
   │   ├── playlist_card.dart
@@ -332,5 +414,12 @@ EPIC  PULL-10 — Spotify OAuth Integration
   feat(PULL-16): implement SpotifyAuthService with PKCE authorization flow
   feat(PULL-17): wire SpotifyAuthService in main.dart replacing MockAuthService
   test(PULL-18): add unit tests for SpotifyAuthService token lifecycle
+
+  ── Playlist Loading (PULL-20) ───────────────────────────────────────────
+  feat(PULL-24): extend PlaylistProvider with playlist-detail loading state
+  feat(PULL-25): add LoadingSongCard skeleton widget
+  feat(PULL-26): refactor PlaylistDetailsScreen to fetch tracks lazily via provider
+  test(PULL-27): add PlaylistProvider detail-loading unit tests
+  docs: add PULL-20 playlist-loading epic to dev_log
 
 ================================================================================

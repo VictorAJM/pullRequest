@@ -1,0 +1,240 @@
+================================================================================
+  PullRequest — Development Log
+  Playlist Transfer App (Spotify ↔ YouTube Music)
+================================================================================
+
+PURPOSE
+-------
+This file serves as a running record of architectural decisions, feature
+implementations, and technical rationale. Since the project does not currently
+use Jira or a user-stories tool, this document captures what was built, why it
+was built that way, and what is intentionally left as a stub for future work.
+
+
+================================================================================
+  INITIAL STATE AUDIT  (completed: 2026-02-22)
+================================================================================
+
+The codebase had a working Flutter skeleton with:
+  - Static screens connected via imperative Navigator.push chains
+  - Services (PlatformService, PlaylistService, TransferService) instantiated
+    directly inside widget State classes — no sharing, no injection
+  - No state management layer (all setState)
+  - No routing abstraction
+  - All playlist data served from local JSON assets (mock data)
+  - OAuth for Spotify and YouTube Music not yet implemented — authorization
+    screen just simulated a 1-second delay and returned success
+  - Transfer logic simulated via an async generator with in-memory delays
+
+PROBLEMS IDENTIFIED
+  1. No state management: each screen created its own service instance,
+     meaning PlaylistService cache was destroyed on every navigation pop.
+  2. No repository abstraction: PlaylistService was tightly coupled to local
+     JSON assets via a switch/case per platform ID. Replacing it with a real
+     API would require rewriting the service entirely.
+  3. Platform model name collision: class Platform in models/ shadowed
+     dart:io's Platform, causing potential confusion.
+  4. TransferProgress.copyWith bug: currentSongTitle used the ?? operator,
+     making it impossible to explicitly reset it to null.
+  5. Dead code: PlaylistSelectionScreen._handleContinue() showed a SnackBar
+     and immediately popped — the SnackBar was never visible.
+  6. Home screen hardcoded: Spotify and YouTube Music icons were hardcoded
+     in home_screen.dart, not driven by PlatformService.
+  7. Sequential navigation debt: PlatformSelectionScreen chained four
+     Navigator.push calls, making the flow fragile and untestable.
+  8. No named routing, no deep-link support.
+  9. No typed error hierarchy — errors surfaced as raw exception strings.
+
+
+================================================================================
+  ARCHITECTURE DECISIONS
+================================================================================
+
+STATE MANAGEMENT — provider package
+  Chosen over Riverpod and Bloc for pragmatic reasons:
+  - Provider is officially recommended for this scale of app
+  - Minimal boilerplate, easy to swap to Riverpod later if complexity grows
+  - ChangeNotifier pattern maps cleanly to the three domains:
+      AuthProvider    — per-platform OAuth state
+      PlaylistProvider — playlist loading, caching, and selection state
+      TransferProvider — active transfer stream subscription and progress
+
+ROUTING — go_router package
+  Chosen over Navigator 2.0 raw API:
+  - Declarative route table, easy to add deep links when needed
+  - context.push() returns a Future, preserving the wizard-like flow
+    (await authorization → await playlist selection → go to transfer)
+  - Route argument classes (AuthorizationArgs, TransferArgs) make the
+    navigation contract explicit and type-safe
+
+REPOSITORY PATTERN
+  Each data domain has an abstract interface:
+      AuthRepository       — authorize(platform), revokeAuth, isAuthorized
+      PlaylistRepository   — fetchPlaylists(platformId), fetchPlaylistDetails
+      TransferRepository   — transferPlaylists(playlists, src, dst) → Stream
+
+  Mock implementations live in lib/services/ and are wired in main.dart.
+  Swapping to real Spotify/YTMusic APIs = implement the interface + change
+  one line in main.dart. Zero screen or provider changes required.
+
+NAMING — MusicPlatform
+  The model formerly called Platform was renamed to MusicPlatform to avoid
+  shadowing dart:io's Platform class. The model was also extended with:
+    - brandColor: Color  (Spotify green, YouTube red — for UI accents)
+    - oauthClientId: String?  (null until OAuth credentials are configured)
+    - scopes: List<String>  (OAuth permission scopes, defined per platform)
+
+THEME
+  AppTheme.light() returns a full ThemeData used in MaterialApp.router.
+  AppTextStyles provides named constants (heading1, heading2, body, label,
+  caption) so text sizing is consistent and not duplicated per screen.
+  The AppBar style, ElevatedButton style, and color scheme are defined once.
+
+ERROR HANDLING
+  AppException (abstract) is the base. Subtypes:
+    AuthException, PlaylistException, TransferException, NetworkException
+  Services throw typed exceptions; providers catch and expose them as
+  String? errorMessage fields that the UI reads.
+
+
+================================================================================
+  FEATURE IMPLEMENTATION NOTES
+================================================================================
+
+AUTH FLOW (stub, ready for OAuth)
+  PlatformAuthorizationScreen calls AuthProvider.authorize(platform).
+  MockAuthService simulates a 1.5-second delay and returns success.
+  When real OAuth is implemented:
+    1. Create SpotifyAuthService implements AuthRepository
+    2. Implement authorize() using flutter_web_auth_2 or app_links for
+       the OAuth redirect callback
+    3. Store tokens via flutter_secure_storage
+    4. Wire SpotifyAuthService (and YtMusicAuthService) in main.dart
+  No screen changes are needed — only the injected implementation changes.
+
+PLAYLIST LOADING (stub, ready for API)
+  MockPlaylistService reads from assets/data/*.json.
+  PlaylistProvider caches by platformId so JSON is only parsed once.
+  When real API is implemented:
+    1. Create SpotifyPlaylistService implements PlaylistRepository
+    2. Inject access token from AuthProvider
+    3. Call GET /v1/me/playlists with pagination
+    4. Wire in main.dart
+  PlaylistProvider's loadPlaylists() and selectedPlaylists already handle
+  multi-platform state — no provider changes needed.
+
+TRANSFER (stub, ready for API)
+  MockTransferService simulates per-song progress with delays.
+  When real transfer is implemented:
+    1. Create RealTransferService implements TransferRepository
+    2. For each song: search destination API, add to playlist
+    3. Yield TransferProgress updates
+    4. Wire in main.dart
+  TransferProvider and PlaylistTransferScreen need zero changes.
+
+TRANSFER HISTORY
+  TransferHistoryScreen is a stub with an empty state UI.
+  A TransferRecord model and a local persistence layer (e.g. sqflite or
+  Hive) will need to be added to populate this screen.
+  Suggested model fields:
+    - id, timestamp, sourcePlatformId, destinationPlatformId
+    - totalSongs, transferredSongs, status, playlistNames
+
+MISSING VIEWS (to be implemented)
+  - Settings screen (API keys, account connections, theme toggle)
+  - Per-playlist transfer result detail (which songs were found/missed)
+  - Onboarding / first-run screen
+  - Error recovery UI for partial transfer failures
+
+
+================================================================================
+  DEPENDENCY MANIFEST
+================================================================================
+
+  provider: ^6.1.2
+    State management via ChangeNotifier + MultiProvider
+
+  go_router: ^14.6.3
+    Declarative URL-based routing
+
+  (planned, not yet added)
+  flutter_secure_storage: ^9.x
+    Token persistence for OAuth access/refresh tokens
+
+  (planned, not yet added)
+  flutter_web_auth_2: ^4.x  OR  app_links: ^6.x
+    OAuth redirect callback handling
+
+
+================================================================================
+  FOLDER STRUCTURE
+================================================================================
+
+  lib/
+  ├── core/
+  │   ├── errors/
+  │   │   └── app_exception.dart        Typed exception hierarchy
+  │   ├── router/
+  │   │   └── app_router.dart           GoRouter config + route constants
+  │   └── theme/
+  │       ├── app_colors.dart           Color palette (unchanged)
+  │       ├── app_text_styles.dart      Named text style constants
+  │       └── app_theme.dart            Full ThemeData factory
+  ├── models/
+  │   ├── music_platform.dart           Renamed from platform.dart
+  │   ├── playlist.dart
+  │   ├── song.dart
+  │   ├── authorization_result.dart
+  │   ├── authorization_state.dart
+  │   └── transfer_progress.dart
+  ├── repositories/                     Abstract interfaces
+  │   ├── auth_repository.dart
+  │   ├── playlist_repository.dart
+  │   └── transfer_repository.dart
+  ├── services/                         Concrete implementations (mock)
+  │   ├── platform_service.dart         Static config, no interface needed
+  │   ├── mock_auth_service.dart
+  │   ├── mock_playlist_service.dart
+  │   └── mock_transfer_service.dart
+  ├── providers/                        ChangeNotifier state holders
+  │   ├── auth_provider.dart
+  │   ├── playlist_provider.dart
+  │   └── transfer_provider.dart
+  ├── screens/
+  │   ├── home_screen.dart
+  │   ├── platform_selection_screen.dart
+  │   ├── platform_authorization_screen.dart
+  │   ├── playlist_selection_screen.dart
+  │   ├── playlist_details_screen.dart
+  │   ├── playlist_transfer_screen.dart
+  │   └── transfer_history_screen.dart  Stub
+  ├── widgets/
+  │   ├── common/
+  │   │   ├── error_view.dart           Reusable error + retry widget
+  │   │   └── loading_playlist_card.dart Skeleton loader
+  │   ├── platform_card.dart
+  │   ├── platform_selector.dart
+  │   ├── playlist_card.dart
+  │   └── song_card.dart
+  ├── app.dart                          MaterialApp.router + AppTheme
+  └── main.dart                         MultiProvider injection root
+
+
+================================================================================
+  COMMIT HISTORY GUIDE
+================================================================================
+
+  docs: add development log and project documentation
+  refactor: rename Platform to MusicPlatform and extend with brand config
+  fix: correct TransferProgress copyWith nullable field handling
+  feat: add provider and go_router dependencies
+  feat: introduce repository pattern with abstract interfaces and typed exceptions
+  feat: implement mock services conforming to repository contracts
+  feat: add ChangeNotifier providers for auth, playlist, and transfer state
+  feat: centralize theme, text styles, and introduce GoRouter navigation
+  feat: add reusable ErrorView and skeleton loading widget
+  refactor: update screens to consume providers and GoRouter
+  feat: add transfer history screen stub
+  test: update tests for renamed models, services, and providers
+
+================================================================================

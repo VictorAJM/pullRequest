@@ -128,7 +128,7 @@ class _PlaylistSelectionScreenState extends State<PlaylistSelectionScreen> {
     return ListView.builder(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       itemCount: 6,
-      itemBuilder: (_, __) => const LoadingPlaylistCard(),
+      itemBuilder: (_, _) => const LoadingPlaylistCard(),
     );
   }
 

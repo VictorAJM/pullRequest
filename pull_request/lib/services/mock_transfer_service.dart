@@ -1,5 +1,4 @@
 import 'dart:async';
-import '../core/errors/app_exception.dart';
 import '../models/playlist.dart';
 import '../models/transfer_progress.dart';
 import '../repositories/transfer_repository.dart';

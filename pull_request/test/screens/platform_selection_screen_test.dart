@@ -19,7 +19,7 @@ Widget _buildTestApp() {
     routes: [
       GoRoute(
         path: AppRoutes.platformSelection,
-        builder: (_, __) => const PlatformSelectionScreen(),
+        builder: (_, _) => const PlatformSelectionScreen(),
       ),
       GoRoute(
         path: AppRoutes.authorize,

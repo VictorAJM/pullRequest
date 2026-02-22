@@ -1,4 +1,3 @@
-import '../core/errors/app_exception.dart';
 import '../models/authorization_result.dart';
 import '../models/music_platform.dart';
 import '../repositories/auth_repository.dart';

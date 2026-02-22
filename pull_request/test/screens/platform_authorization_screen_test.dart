@@ -16,7 +16,7 @@ Widget _buildTestApp(MusicPlatform platform) {
     routes: [
       GoRoute(
         path: '/',
-        builder: (_, __) => PlatformAuthorizationScreen(
+        builder: (_, _) => PlatformAuthorizationScreen(
           platform: platform,
           isSource: true,
         ),
@@ -67,7 +67,7 @@ void main() {
         routes: [
           GoRoute(
             path: '/home',
-            builder: (_, __) => Scaffold(
+            builder: (_, _) => Scaffold(
               body: Builder(
                 builder: (context) => ElevatedButton(
                   onPressed: () => context.push('/auth'),
@@ -78,7 +78,7 @@ void main() {
           ),
           GoRoute(
             path: '/auth',
-            builder: (_, __) => PlatformAuthorizationScreen(
+            builder: (_, _) => PlatformAuthorizationScreen(
               platform: testPlatform,
               isSource: true,
             ),
@@ -115,7 +115,7 @@ void main() {
         routes: [
           GoRoute(
             path: '/home',
-            builder: (_, __) => Scaffold(
+            builder: (_, _) => Scaffold(
               body: Builder(
                 builder: (context) => ElevatedButton(
                   onPressed: () => context.push('/auth'),
@@ -126,7 +126,7 @@ void main() {
           ),
           GoRoute(
             path: '/auth',
-            builder: (_, __) => PlatformAuthorizationScreen(
+            builder: (_, _) => PlatformAuthorizationScreen(
               platform: testPlatform,
               isSource: true,
             ),
@@ -158,7 +158,7 @@ void main() {
         routes: [
           GoRoute(
             path: '/home',
-            builder: (_, __) => Scaffold(
+            builder: (_, _) => Scaffold(
               body: Builder(
                 builder: (context) => ElevatedButton(
                   onPressed: () => context.push('/auth'),
@@ -169,7 +169,7 @@ void main() {
           ),
           GoRoute(
             path: '/auth',
-            builder: (_, __) => PlatformAuthorizationScreen(
+            builder: (_, _) => PlatformAuthorizationScreen(
               platform: testPlatform,
               isSource: true,
             ),

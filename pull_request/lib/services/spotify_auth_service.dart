@@ -59,10 +59,34 @@ class SpotifyAuthService implements AuthRepository {
   static const _authEndpoint = 'https://accounts.spotify.com/authorize';
 
   /// Scopes requested during authorization.
-  /// Extend this set when new API features are added.
   static final _scopes = SpotifyScope.encode({
+    // Images
+    SpotifyScope.ugcImageUpload,
+    // Spotify Connect
+    SpotifyScope.userReadPlaybackState,
+    SpotifyScope.userModifyPlaybackState,
+    SpotifyScope.userReadCurrentlyPlaying,
+    // Playback
+    SpotifyScope.appRemoteControl,
+    SpotifyScope.streaming,
+    // Playlists
     SpotifyScope.playlistReadPrivate,
     SpotifyScope.playlistReadCollaborative,
+    SpotifyScope.playlistModifyPrivate,
+    SpotifyScope.playlistModifyPublic,
+    // Follow
+    SpotifyScope.userFollowModify,
+    SpotifyScope.userFollowRead,
+    // Listening History
+    SpotifyScope.userReadPlaybackPosition,
+    SpotifyScope.userTopRead,
+    SpotifyScope.userReadRecentlyPlayed,
+    // Library
+    SpotifyScope.userLibraryModify,
+    SpotifyScope.userLibraryRead,
+    // Users
+    SpotifyScope.userReadEmail,
+    SpotifyScope.userReadPrivate,
   });
   static const _tokenEndpoint = 'https://accounts.spotify.com/api/token';
 

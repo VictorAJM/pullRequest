@@ -1,7 +1,9 @@
 {
   "permissions": {
     "allow": [
-      "Bash(cd:*)"
+      "Bash(cd:*)",
+      "Bash(tail:*)",
+      "Bash(cd /c/Users/victo/pullRequest/pull_request && git push origin main 2>&1)"
     ]
   }
 }

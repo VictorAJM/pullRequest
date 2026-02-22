@@ -1,0 +1,15 @@
+/// App-level configuration constants.
+///
+/// Setup:
+///   1. Copy this file → `app_config.dart` (same directory).
+///   2. Fill in each value below.
+///   3. `app_config.dart` is gitignored — never commit it.
+///
+/// Spotify:
+///   - Create an app at https://developer.spotify.com/dashboard
+///   - Copy the Client ID into [spotifyClientId].
+///   - Add `pullrequest://callback` as a Redirect URI in the dashboard.
+abstract final class AppConfig {
+  /// Spotify Developer Dashboard → Your App → Client ID.
+  static const spotifyClientId = 'REPLACE_WITH_YOUR_SPOTIFY_CLIENT_ID';
+}

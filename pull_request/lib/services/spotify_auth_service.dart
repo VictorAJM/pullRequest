@@ -7,6 +7,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_web_auth_2/flutter_web_auth_2.dart';
 import 'package:http/http.dart' as http;
 
+import '../core/config/app_config.dart';
 import '../core/errors/app_exception.dart';
 import '../models/authorization_result.dart';
 import '../models/music_platform.dart';
@@ -46,14 +47,12 @@ typedef WebAuthenticateFn = Future<String> Function({
 ///
 /// Tokens are persisted in encrypted storage and refreshed silently on expiry.
 ///
-/// **Setup required before release:**
-///   1. Create an app at https://developer.spotify.com/dashboard
-///   2. Replace [_clientId] with the app's Client ID.
-///   3. Register `pullrequest://callback` as a Redirect URI in the dashboard.
-///   4. Ensure the scopes below match [PlatformService]'s Spotify config.
+/// **Setup:** copy `lib/core/config/app_config.dart.example` →
+/// `app_config.dart`, fill in [AppConfig.spotifyClientId], and register
+/// `pullrequest://callback` as a Redirect URI in the Spotify Developer
+/// Dashboard.
 class SpotifyAuthService implements AuthRepository {
-  /// Replace with your Spotify Developer Dashboard client ID before release.
-  static const _clientId = 'YOUR_SPOTIFY_CLIENT_ID';
+  static const _clientId = AppConfig.spotifyClientId;
 
   static const _redirectUri = 'pullrequest://callback';
   static const _scopes =

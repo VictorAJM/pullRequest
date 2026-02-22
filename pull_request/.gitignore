@@ -43,3 +43,6 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# App secrets — copy app_config.dart.example → app_config.dart and fill in values
+lib/core/config/app_config.dart

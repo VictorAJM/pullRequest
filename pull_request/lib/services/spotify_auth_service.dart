@@ -8,6 +8,7 @@ import 'package:flutter_web_auth_2/flutter_web_auth_2.dart';
 import 'package:http/http.dart' as http;
 
 import '../core/config/app_config.dart';
+import '../core/config/spotify_scopes.dart';
 import '../core/errors/app_exception.dart';
 import '../models/authorization_result.dart';
 import '../models/music_platform.dart';
@@ -36,7 +37,7 @@ class _FlutterSecureStorageAdapter implements TokenStorage {
   @override
   Future<void> delete(String key) => _inner.delete(key: key);
 }
-
+  
 /// Signature for [FlutterWebAuth2.authenticate], injected for testing.
 typedef WebAuthenticateFn = Future<String> Function({
   required String url,
@@ -55,9 +56,14 @@ class SpotifyAuthService implements AuthRepository {
   static const _clientId = AppConfig.spotifyClientId;
 
   static const _redirectUri = 'pullrequest://callback';
-  static const _scopes =
-      'playlist-read-private playlist-read-collaborative';
   static const _authEndpoint = 'https://accounts.spotify.com/authorize';
+
+  /// Scopes requested during authorization.
+  /// Extend this set when new API features are added.
+  static final _scopes = SpotifyScope.encode({
+    SpotifyScope.playlistReadPrivate,
+    SpotifyScope.playlistReadCollaborative,
+  });
   static const _tokenEndpoint = 'https://accounts.spotify.com/api/token';
 
   // ── Secure storage keys ────────────────────────────────────────────────────

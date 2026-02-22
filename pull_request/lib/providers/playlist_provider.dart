@@ -19,6 +19,11 @@ class PlaylistProvider extends ChangeNotifier {
   final Map<String, String?> _errors = {};
   final Set<String> _selectedIds = {};
 
+  // ── Detail state (one fetched Playlist with songs per playlist ID) ─────────
+  final Map<String, Playlist?> _details = {};
+  final Map<String, bool> _loadingDetails = {};
+  final Map<String, String?> _detailErrors = {};
+
   PlaylistProvider({required PlaylistRepository repository})
       : _repository = repository;
 
@@ -61,7 +66,50 @@ class PlaylistProvider extends ChangeNotifier {
 
   void clearCache() {
     _playlists.clear();
+    _details.clear();
+    _detailErrors.clear();
     notifyListeners();
+  }
+
+  // ── Playlist detail ────────────────────────────────────────────────────────
+
+  /// Fetched [Playlist] with full song list for [playlistId], or null if not
+  /// yet loaded.
+  Playlist? detailsFor(String playlistId) => _details[playlistId];
+
+  /// Whether a detail fetch is in progress for [playlistId].
+  bool isLoadingDetails(String playlistId) =>
+      _loadingDetails[playlistId] ?? false;
+
+  /// Last error from a detail fetch for [playlistId], or null if no error.
+  String? detailErrorFor(String playlistId) => _detailErrors[playlistId];
+
+  /// Fetches the full playlist (with songs) for [playlistId], caching the
+  /// result. Call with [forceRefresh] = true to bypass the cache.
+  Future<void> loadPlaylistDetails(
+    String platformId,
+    String playlistId, {
+    bool forceRefresh = false,
+  }) async {
+    if (!forceRefresh && _details.containsKey(playlistId)) return;
+
+    _loadingDetails[playlistId] = true;
+    _detailErrors[playlistId] = null;
+    notifyListeners();
+
+    try {
+      _details[playlistId] = await _repository.fetchPlaylistDetails(
+        platformId,
+        playlistId,
+      );
+    } on PlaylistException catch (e) {
+      _detailErrors[playlistId] = e.message;
+    } catch (e) {
+      _detailErrors[playlistId] = e.toString();
+    } finally {
+      _loadingDetails[playlistId] = false;
+      notifyListeners();
+    }
   }
 
   // ── Selection state ───────────────────────────────────────────────────────

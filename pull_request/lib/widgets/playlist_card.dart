@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import '../models/playlist.dart';
+import 'package:go_router/go_router.dart';
+import '../core/router/app_router.dart';
 import '../core/theme/app_colors.dart';
-import '../screens/playlist_details_screen.dart';
+import '../models/playlist.dart';
 
 class PlaylistCard extends StatelessWidget {
   final Playlist playlist;
@@ -14,15 +15,6 @@ class PlaylistCard extends StatelessWidget {
     this.isSelected = false,
     this.onTap,
   });
-
-  void _showPlaylistDetails(BuildContext context) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => PlaylistDetailsScreen(playlist: playlist),
-      ),
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -46,7 +38,8 @@ class PlaylistCard extends StatelessWidget {
               width: 24,
               height: 24,
               decoration: BoxDecoration(
-                color: isSelected ? AppColors.primaryBlue : Colors.transparent,
+                color:
+                    isSelected ? AppColors.primaryBlue : Colors.transparent,
                 borderRadius: BorderRadius.circular(6),
                 border: Border.all(
                   color: isSelected ? AppColors.primaryBlue : Colors.grey,
@@ -58,7 +51,7 @@ class PlaylistCard extends StatelessWidget {
                   : null,
             ),
             const SizedBox(width: 16),
-            // Playlist info
+            // Info
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -76,11 +69,13 @@ class PlaylistCard extends StatelessWidget {
                   const SizedBox(height: 4),
                   Row(
                     children: [
-                      Icon(Icons.music_note, size: 14, color: Colors.grey[600]),
+                      Icon(Icons.music_note,
+                          size: 14, color: Colors.grey[600]),
                       const SizedBox(width: 4),
                       Text(
                         '${playlist.trackCount} tracks',
-                        style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                        style: TextStyle(
+                            fontSize: 14, color: Colors.grey[600]),
                       ),
                     ],
                   ),
@@ -89,7 +84,8 @@ class PlaylistCard extends StatelessWidget {
                     const SizedBox(height: 4),
                     Text(
                       playlist.description!,
-                      style: TextStyle(fontSize: 13, color: Colors.grey[500]),
+                      style: TextStyle(
+                          fontSize: 13, color: Colors.grey[500]),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -98,11 +94,14 @@ class PlaylistCard extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 8),
-            // Info button
             IconButton(
-              icon: Icon(Icons.info_outline, color: AppColors.primaryBlue),
-              onPressed: () => _showPlaylistDetails(context),
+              icon: const Icon(Icons.info_outline,
+                  color: AppColors.primaryBlue),
               tooltip: 'View songs',
+              onPressed: () => context.push(
+                AppRoutes.playlistDetails,
+                extra: playlist,
+              ),
             ),
           ],
         ),

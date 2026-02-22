@@ -1,26 +1,28 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
+import '../core/router/app_router.dart';
 import '../core/theme/app_colors.dart';
-import 'platform_selection_screen.dart';
+import '../core/theme/app_text_styles.dart';
+import '../services/platform_service.dart';
 
-class PullRequestHome extends StatelessWidget {
-  const PullRequestHome({super.key});
+class HomeScreen extends StatelessWidget {
+  const HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final platforms = context.read<PlatformService>().getAvailablePlatforms();
+
     return Scaffold(
-      backgroundColor: AppColors.background,
       appBar: AppBar(
-        backgroundColor: AppColors.lightBlue,
-        elevation: 0,
-        centerTitle: true,
-        title: const Text(
-          'PullRequest',
-          style: TextStyle(
-            color: AppColors.darkBlue,
-            fontSize: 20,
-            fontWeight: FontWeight.w600,
+        title: const Text('PullRequest'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.history),
+            tooltip: 'Transfer history',
+            onPressed: () => context.push(AppRoutes.history),
           ),
-        ),
+        ],
       ),
       body: Center(
         child: Padding(
@@ -28,17 +30,19 @@ class PullRequestHome extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
+              // Dynamic platform icons driven by PlatformService
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  SizedBox(
-                    width: 80,
-                    height: 80,
-                    child: Image.asset(
-                      'assets/icons/spotify_icon.png',
-                      fit: BoxFit.contain,
+                  if (platforms.isNotEmpty)
+                    SizedBox(
+                      width: 80,
+                      height: 80,
+                      child: Image.asset(
+                        platforms.first.iconPath,
+                        fit: BoxFit.contain,
+                      ),
                     ),
-                  ),
                   const SizedBox(width: 20),
                   Column(
                     children: [
@@ -48,64 +52,39 @@ class PullRequestHome extends StatelessWidget {
                         color: Colors.grey[800],
                       ),
                       const SizedBox(height: 4),
-                      Icon(Icons.arrow_back, size: 30, color: Colors.grey[800]),
+                      Icon(
+                        Icons.arrow_back,
+                        size: 30,
+                        color: Colors.grey[800],
+                      ),
                     ],
                   ),
                   const SizedBox(width: 20),
-                  SizedBox(
-                    width: 80,
-                    height: 80,
-                    child: Image.asset(
-                      'assets/icons/youtube_music_icon.png',
-                      fit: BoxFit.contain,
+                  if (platforms.length > 1)
+                    SizedBox(
+                      width: 80,
+                      height: 80,
+                      child: Image.asset(
+                        platforms[1].iconPath,
+                        fit: BoxFit.contain,
+                      ),
                     ),
-                  ),
                 ],
               ),
               const SizedBox(height: 40),
               const Text(
                 'Move your music between',
-                style: TextStyle(
-                  fontSize: 18,
-                  color: AppColors.darkBlue,
-                  fontWeight: FontWeight.w500,
-                ),
+                style: AppTextStyles.heading3,
               ),
               const SizedBox(height: 4),
               const Text(
                 'platforms in seconds.',
-                style: TextStyle(
-                  fontSize: 18,
-                  color: AppColors.darkBlue,
-                  fontWeight: FontWeight.w500,
-                ),
+                style: AppTextStyles.heading3,
               ),
               const SizedBox(height: 80),
-              SizedBox(
-                width: double.infinity,
-                height: 56,
-                child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const PlatformSelectionScreen(),
-                      ),
-                    );
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primaryBlue,
-                    foregroundColor: AppColors.background,
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(28),
-                    ),
-                  ),
-                  child: const Text(
-                    'Start Transfer',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-                  ),
-                ),
+              ElevatedButton(
+                onPressed: () => context.push(AppRoutes.platformSelection),
+                child: const Text('Start Transfer'),
               ),
             ],
           ),

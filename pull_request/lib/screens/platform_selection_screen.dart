@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
-import '../models/platform.dart';
-import '../models/authorization_result.dart';
+import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
+import '../core/router/app_router.dart';
+import '../core/theme/app_colors.dart';
+import '../models/authorization_state.dart';
+import '../models/music_platform.dart';
+import '../providers/auth_provider.dart';
+import '../providers/playlist_provider.dart';
 import '../services/platform_service.dart';
 import '../widgets/platform_selector.dart';
-import '../core/theme/app_colors.dart';
-import 'platform_authorization_screen.dart';
-import 'playlist_selection_screen.dart';
-import 'playlist_transfer_screen.dart';
 
 class PlatformSelectionScreen extends StatefulWidget {
   const PlatformSelectionScreen({super.key});
@@ -17,20 +19,19 @@ class PlatformSelectionScreen extends StatefulWidget {
 }
 
 class _PlatformSelectionScreenState extends State<PlatformSelectionScreen> {
-  final PlatformService _platformService = PlatformService();
-  Platform? _sourcePlatform;
-  Platform? _destinationPlatform;
+  MusicPlatform? _sourcePlatform;
+  MusicPlatform? _destinationPlatform;
 
   bool get _canProceed =>
       _sourcePlatform != null && _destinationPlatform != null;
 
-  List<String> get _disabledSourcePlatforms =>
+  List<String> get _disabledSourceIds =>
       _destinationPlatform != null ? [_destinationPlatform!.id] : [];
 
-  List<String> get _disabledDestinationPlatforms =>
+  List<String> get _disabledDestinationIds =>
       _sourcePlatform != null ? [_sourcePlatform!.id] : [];
 
-  void _handleSourceSelection(Platform platform) {
+  void _handleSourceSelection(MusicPlatform platform) {
     setState(() {
       _sourcePlatform = platform;
       if (_destinationPlatform?.id == platform.id) {
@@ -39,7 +40,7 @@ class _PlatformSelectionScreenState extends State<PlatformSelectionScreen> {
     });
   }
 
-  void _handleDestinationSelection(Platform platform) {
+  void _handleDestinationSelection(MusicPlatform platform) {
     setState(() {
       _destinationPlatform = platform;
       if (_sourcePlatform?.id == platform.id) {
@@ -48,114 +49,82 @@ class _PlatformSelectionScreenState extends State<PlatformSelectionScreen> {
     });
   }
 
-  void _handleClearSource() {
-    setState(() {
-      _sourcePlatform = null;
-    });
-  }
-
-  void _handleClearDestination() {
-    setState(() {
-      _destinationPlatform = null;
-    });
-  }
-
   Future<void> _handleSelectPlaylists() async {
-    final sourceResult = await Navigator.push<AuthorizationResult>(
-      context,
-      MaterialPageRoute(
-        builder: (context) => PlatformAuthorizationScreen(
-          platform: _sourcePlatform!,
-          isSource: true,
-        ),
+    final authProvider = context.read<AuthProvider>();
+    final playlistProvider = context.read<PlaylistProvider>();
+
+    // Clear any selection from a previous transfer flow.
+    playlistProvider.clearSelection();
+
+    // ── Authorize source ───────────────────────────────────────────────────
+    await context.push(
+      AppRoutes.authorize,
+      extra: AuthorizationArgs(
+        platform: _sourcePlatform!,
+        isSource: true,
       ),
     );
-
-    if (sourceResult == null || !sourceResult.isAuthorized) {
-      if (mounted) {
-        _showAuthorizationError(
-          sourceResult?.platform.name ?? _sourcePlatform!.name,
-          sourceResult?.errorMessage ?? 'Authorization was cancelled',
-        );
-      }
-      return;
-    }
 
     if (!mounted) return;
-
-    final destinationResult = await Navigator.push<AuthorizationResult>(
-      context,
-      MaterialPageRoute(
-        builder: (context) => PlatformAuthorizationScreen(
-          platform: _destinationPlatform!,
-          isSource: false,
-        ),
-      ),
-    );
-
-    if (destinationResult == null || !destinationResult.isAuthorized) {
-      if (mounted) {
-        _showAuthorizationError(
-          destinationResult?.platform.name ?? _destinationPlatform!.name,
-          destinationResult?.errorMessage ?? 'Authorization was cancelled',
-        );
-      }
-      return;
-    }
-
-    if (!mounted) return;
-
-    // Both platforms authorized, navigate to playlist selection
-    final selectedPlaylists = await Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) =>
-            PlaylistSelectionScreen(platform: _sourcePlatform!, isSource: true),
-      ),
-    );
-
-    if (selectedPlaylists != null && selectedPlaylists.isNotEmpty && mounted) {
-      // Navigate to transfer screen
-      await Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => PlaylistTransferScreen(
-            selectedPlaylists: selectedPlaylists,
-            sourcePlatform: _sourcePlatform!,
-            destinationPlatform: _destinationPlatform!,
-          ),
-        ),
+    if (authProvider.stateFor(_sourcePlatform!.id) !=
+        AuthorizationState.authorized) {
+      _showAuthorizationError(
+        _sourcePlatform!.name,
+        authProvider.errorFor(_sourcePlatform!.id) ??
+            'Authorization was cancelled.',
       );
+      return;
     }
+
+    // ── Authorize destination ──────────────────────────────────────────────
+    await context.push(
+      AppRoutes.authorize,
+      extra: AuthorizationArgs(
+        platform: _destinationPlatform!,
+        isSource: false,
+      ),
+    );
+
+    if (!mounted) return;
+    if (authProvider.stateFor(_destinationPlatform!.id) !=
+        AuthorizationState.authorized) {
+      _showAuthorizationError(
+        _destinationPlatform!.name,
+        authProvider.errorFor(_destinationPlatform!.id) ??
+            'Authorization was cancelled.',
+      );
+      return;
+    }
+
+    // ── Select playlists ───────────────────────────────────────────────────
+    final confirmed = await context.push<bool>(
+      AppRoutes.playlistSelection,
+      extra: _sourcePlatform!,
+    );
+
+    if (!mounted) return;
+    if (confirmed != true) return;
+
+    // ── Start transfer ─────────────────────────────────────────────────────
+    context.push(
+      AppRoutes.transfer,
+      extra: TransferArgs(
+        sourcePlatform: _sourcePlatform!,
+        destinationPlatform: _destinationPlatform!,
+      ),
+    );
   }
 
   void _showAuthorizationError(String platformName, String message) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: AppColors.background,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text(
-          'Authorization Failed',
-          style: TextStyle(
-            color: AppColors.darkBlue,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        content: Text(
-          'Could not authorize $platformName: $message',
-          style: TextStyle(color: AppColors.darkBlue),
-        ),
+        title: const Text('Authorization Failed'),
+        content: Text('Could not authorize $platformName: $message'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text(
-              'OK',
-              style: TextStyle(
-                color: AppColors.primaryBlue,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
+            child: const Text('OK'),
           ),
         ],
       ),
@@ -164,25 +133,15 @@ class _PlatformSelectionScreenState extends State<PlatformSelectionScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final platforms = _platformService.getAvailablePlatforms();
+    final platforms =
+        context.read<PlatformService>().getAvailablePlatforms();
 
     return Scaffold(
-      backgroundColor: AppColors.background,
       appBar: AppBar(
-        backgroundColor: AppColors.lightBlue,
-        elevation: 0,
-        centerTitle: true,
+        title: const Text('PullRequest'),
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: AppColors.darkBlue),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: Text(
-          'PullRequest',
-          style: TextStyle(
-            color: AppColors.darkBlue,
-            fontSize: 20,
-            fontWeight: FontWeight.w600,
-          ),
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => context.pop(),
         ),
       ),
       body: SafeArea(
@@ -194,42 +153,29 @@ class _PlatformSelectionScreenState extends State<PlatformSelectionScreen> {
                 title: 'FROM (Source)',
                 selectedPlatform: _sourcePlatform,
                 availablePlatforms: platforms,
-                disabledPlatformIds: _disabledSourcePlatforms,
+                disabledPlatformIds: _disabledSourceIds,
                 onPlatformSelected: _handleSourceSelection,
-                onClear: _handleClearSource,
+                onClear: () => setState(() => _sourcePlatform = null),
               ),
               const SizedBox(height: 24),
-              Icon(Icons.arrow_downward, size: 32, color: AppColors.darkBlue),
+              const Icon(
+                Icons.arrow_downward,
+                size: 32,
+                color: AppColors.darkBlue,
+              ),
               const SizedBox(height: 24),
               PlatformSelector(
                 title: 'TO (Destination)',
                 selectedPlatform: _destinationPlatform,
                 availablePlatforms: platforms,
-                disabledPlatformIds: _disabledDestinationPlatforms,
+                disabledPlatformIds: _disabledDestinationIds,
                 onPlatformSelected: _handleDestinationSelection,
-                onClear: _handleClearDestination,
+                onClear: () => setState(() => _destinationPlatform = null),
               ),
               const Spacer(),
-              SizedBox(
-                width: double.infinity,
-                height: 56,
-                child: ElevatedButton(
-                  onPressed: _canProceed ? _handleSelectPlaylists : null,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primaryBlue,
-                    foregroundColor: AppColors.background,
-                    disabledBackgroundColor: AppColors.lightBlue,
-                    disabledForegroundColor: Colors.grey,
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(28),
-                    ),
-                  ),
-                  child: const Text(
-                    'Select Playlists',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-                  ),
-                ),
+              ElevatedButton(
+                onPressed: _canProceed ? _handleSelectPlaylists : null,
+                child: const Text('Select Playlists'),
               ),
             ],
           ),

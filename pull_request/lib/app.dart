@@ -1,20 +1,17 @@
 import 'package:flutter/material.dart';
-import 'screens/home_screen.dart';
-import 'core/theme/app_colors.dart';
+import 'core/router/app_router.dart';
+import 'core/theme/app_theme.dart';
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class PullRequestApp extends StatelessWidget {
+  const PullRequestApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return MaterialApp.router(
       title: 'PullRequest',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: AppColors.primaryBlue),
-        useMaterial3: true,
-      ),
-      home: const PullRequestHome(),
+      theme: AppTheme.light(),
+      routerConfig: appRouter,
     );
   }
 }

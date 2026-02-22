@@ -148,6 +148,89 @@ MISSING VIEWS (to be implemented)
 
 
 ================================================================================
+  JIRA BACKLOG
+================================================================================
+
+EPIC  PULL-10 — Spotify OAuth Integration
+  Goal: Replace MockAuthService with a real Spotify PKCE OAuth flow so users
+  can connect their Spotify account and the app can read their playlists.
+
+  ┌─────────────────────────────────────────────────────────────────────────┐
+  │ USER STORIES                                                            │
+  ├─────────────────────────────────────────────────────────────────────────┤
+  │ PULL-11  As a user, I want to connect my Spotify account so that the   │
+  │          app can read my private and collaborative playlists.           │
+  │          Acceptance:                                                    │
+  │            - Tapping "Authorize Spotify" opens the Spotify login page  │
+  │            - After granting permission, I am returned to the app       │
+  │            - The authorization screen transitions to the next step     │
+  │                                                                         │
+  │ PULL-12  As a user, I want my Spotify session to persist across app    │
+  │          restarts so I don't have to re-authorize every time.          │
+  │          Acceptance:                                                    │
+  │            - Killing and relaunching the app does not prompt OAuth     │
+  │            - isAuthorized('spotify') returns true on relaunch          │
+  │            - Access token is refreshed silently when expired           │
+  │                                                                         │
+  │ PULL-13  As a user, I want the app to handle a cancelled or failed     │
+  │          authorization gracefully, with a clear error message and the  │
+  │          ability to retry.                                              │
+  │          Acceptance:                                                    │
+  │            - Closing the browser mid-flow does not crash the app       │
+  │            - AuthProvider.errorFor('spotify') surfaces the message     │
+  │            - The "Authorize" button is re-enabled after failure        │
+  └─────────────────────────────────────────────────────────────────────────┘
+
+  TASKS (sub-tasks of PULL-10)
+  ─────────────────────────────────────────────────────────────────────────
+  PULL-14  Add dependencies: flutter_web_auth_2, flutter_secure_storage, http
+             Type: Task | Points: 1
+             File: pubspec.yaml
+
+  PULL-15  Register custom URI scheme pullrequest://callback on Android/iOS
+             Type: Task | Points: 2
+             Files:
+               android/app/src/main/AndroidManifest.xml
+               ios/Runner/Info.plist
+             Notes: Also register the redirect URI in the Spotify Developer
+             Dashboard. Add android:launchMode="singleTop" to <activity>.
+
+  PULL-16  Implement SpotifyAuthService with PKCE authorization flow
+             Type: Story | Points: 5
+             File: lib/services/spotify_auth_service.dart
+             Implements: AuthRepository
+             Details:
+               - PKCE: generate codeVerifier (32 random bytes, base64url) and
+                 codeChallenge (SHA-256, base64url no-padding)
+               - Launch browser via FlutterWebAuth2.authenticate()
+               - Exchange auth code for tokens via POST /api/token
+               - Store access_token, refresh_token, expiry_ms in
+                 FlutterSecureStorage
+               - isAuthorized(): check token existence + expiry, silent refresh
+               - revokeAuth(): delete all 3 storage keys
+               - _refreshTokens(): silent refresh_token grant
+               - Expose getAccessToken() for future SpotifyPlaylistService
+
+  PULL-17  Wire SpotifyAuthService in main.dart
+             Type: Task | Points: 1
+             File: lib/main.dart
+             Notes: Replace MockAuthService() — one line change. Keep mock
+             import for test isolation.
+
+  PULL-18  Unit tests for SpotifyAuthService
+             Type: Task | Points: 3
+             File: test/services/spotify_auth_service_test.dart
+             Coverage:
+               - authorize() success path returns AuthorizationResult.success
+               - authorize() user-cancel returns AuthorizationResult.failure
+               - authorize() network error throws AuthException
+               - isAuthorized() returns false when no token stored
+               - isAuthorized() returns false when token expired and refresh fails
+               - isAuthorized() returns true when token expired but refresh succeeds
+               - revokeAuth() clears all storage keys
+
+
+================================================================================
   DEPENDENCY MANIFEST
 ================================================================================
 
@@ -157,13 +240,18 @@ MISSING VIEWS (to be implemented)
   go_router: ^14.6.3
     Declarative URL-based routing
 
-  (planned, not yet added)
-  flutter_secure_storage: ^9.x
-    Token persistence for OAuth access/refresh tokens
+  (planned — PULL-14, not yet added)
+  flutter_secure_storage: ^9.2.2
+    Encrypted token persistence for OAuth access/refresh tokens
 
-  (planned, not yet added)
-  flutter_web_auth_2: ^4.x  OR  app_links: ^6.x
-    OAuth redirect callback handling
+  (planned — PULL-14, not yet added)
+  flutter_web_auth_2: ^4.0.1
+    OAuth browser launch + redirect callback interception via custom URI scheme
+    Chosen over app_links: handles both launch and callback in one call
+
+  (planned — PULL-14, not yet added)
+  http: ^1.2.0
+    Token exchange HTTP calls (POST /api/token, refresh grant)
 
 
 ================================================================================
@@ -236,5 +324,13 @@ MISSING VIEWS (to be implemented)
   refactor: update screens to consume providers and GoRouter
   feat: add transfer history screen stub
   test: update tests for renamed models, services, and providers
+
+  ── Spotify OAuth (PULL-10) ──────────────────────────────────────────────
+  docs: add Jira backlog and user stories for Spotify OAuth epic (PULL-10)
+  feat(PULL-14): add flutter_web_auth_2, flutter_secure_storage, http deps
+  feat(PULL-15): register pullrequest://callback URI scheme on Android + iOS
+  feat(PULL-16): implement SpotifyAuthService with PKCE authorization flow
+  feat(PULL-17): wire SpotifyAuthService in main.dart replacing MockAuthService
+  test(PULL-18): add unit tests for SpotifyAuthService token lifecycle
 
 ================================================================================

@@ -25,18 +25,24 @@ class PlaylistTransferScreen extends StatefulWidget {
 class _PlaylistTransferScreenState extends State<PlaylistTransferScreen> {
   bool _dialogShown = false;
 
+  /// Cached to avoid calling context.read() inside dispose(), which is
+  /// unsafe after the widget is deactivated.
+  late final TransferProvider _transferProvider;
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      _transferProvider = context.read<TransferProvider>();
+      _transferProvider.addListener(_onTransferChanged);
       _startTransfer();
-      context.read<TransferProvider>().addListener(_onTransferChanged);
     });
   }
 
   @override
   void dispose() {
-    context.read<TransferProvider>().removeListener(_onTransferChanged);
+    _transferProvider.removeListener(_onTransferChanged);
     super.dispose();
   }
 

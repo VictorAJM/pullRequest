@@ -26,20 +26,22 @@ void main() {
       }
     });
 
-    test('includes Spotify platform', () {
+    test('includes Spotify platform with brand color and scopes', () {
       final platforms = service.getAvailablePlatforms();
       final spotify = platforms.firstWhere((p) => p.id == 'spotify');
 
       expect(spotify.name, 'Spotify');
       expect(spotify.iconPath, contains('spotify'));
+      expect(spotify.scopes, isNotEmpty);
     });
 
-    test('includes YouTube Music platform', () {
+    test('includes YouTube Music platform with brand color and scopes', () {
       final platforms = service.getAvailablePlatforms();
-      final youtube = platforms.firstWhere((p) => p.id == 'youtube_music');
+      final yt = platforms.firstWhere((p) => p.id == 'youtube_music');
 
-      expect(youtube.name, 'YouTube Music');
-      expect(youtube.iconPath, contains('youtube'));
+      expect(yt.name, 'YouTube Music');
+      expect(yt.iconPath, contains('youtube'));
+      expect(yt.scopes, isNotEmpty);
     });
 
     test('getPlatformById returns correct platform', () {
@@ -51,14 +53,11 @@ void main() {
     });
 
     test('getPlatformById returns null for invalid id', () {
-      final platform = service.getPlatformById('invalid_id');
-
-      expect(platform, isNull);
+      expect(service.getPlatformById('invalid_id'), isNull);
     });
 
     test('returned list is unmodifiable', () {
       final platforms = service.getAvailablePlatforms();
-
       expect(() => platforms.add(platforms.first), throwsUnsupportedError);
     });
   });

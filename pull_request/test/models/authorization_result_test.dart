@@ -1,13 +1,15 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:pull_request/models/platform.dart';
+import 'package:pull_request/models/music_platform.dart';
 import 'package:pull_request/models/authorization_result.dart';
 
 void main() {
   group('AuthorizationResult', () {
-    const testPlatform = Platform(
+    const testPlatform = MusicPlatform(
       id: 'spotify',
       name: 'Spotify',
       iconPath: 'assets/test.png',
+      brandColor: Color(0xFF1DB954),
     );
 
     test('creates successful result', () {
@@ -33,7 +35,6 @@ void main() {
       const result = AuthorizationResult(
         isAuthorized: true,
         platform: testPlatform,
-        errorMessage: null,
       );
 
       expect(result.isAuthorized, isTrue);

@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:pull_request/models/platform.dart';
+import 'package:pull_request/models/music_platform.dart';
 import 'package:pull_request/widgets/platform_card.dart';
 
 void main() {
   group('PlatformCard', () {
-    const testPlatform = Platform(
+    const testPlatform = MusicPlatform(
       id: 'test',
       name: 'Test Platform',
       iconPath: 'assets/icons/spotify_icon.png',
+      brandColor: Color(0xFF1DB954),
     );
 
     testWidgets('displays platform name', (tester) async {
@@ -78,10 +79,12 @@ void main() {
       );
 
       final container = tester.widget<Container>(
-        find.descendant(
-          of: find.byType(PlatformCard),
-          matching: find.byType(Container).first,
-        ),
+        find
+            .descendant(
+              of: find.byType(PlatformCard),
+              matching: find.byType(Container),
+            )
+            .first,
       );
 
       final decoration = container.decoration as BoxDecoration;

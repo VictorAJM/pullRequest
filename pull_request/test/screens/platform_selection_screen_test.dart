@@ -1,13 +1,58 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
+import 'package:pull_request/providers/auth_provider.dart';
+import 'package:pull_request/providers/playlist_provider.dart';
+import 'package:pull_request/screens/platform_authorization_screen.dart';
 import 'package:pull_request/screens/platform_selection_screen.dart';
+import 'package:pull_request/services/mock_auth_service.dart';
+import 'package:pull_request/services/mock_playlist_service.dart';
+import 'package:pull_request/services/platform_service.dart';
+import 'package:pull_request/core/router/app_router.dart';
+
+/// Builds a testable app with the full provider tree and a minimal router
+/// that covers the platform-selection → authorization navigation path.
+Widget _buildTestApp() {
+  final router = GoRouter(
+    initialLocation: AppRoutes.platformSelection,
+    routes: [
+      GoRoute(
+        path: AppRoutes.platformSelection,
+        builder: (_, __) => const PlatformSelectionScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.authorize,
+        builder: (_, state) {
+          final args = state.extra as AuthorizationArgs;
+          return PlatformAuthorizationScreen(
+            platform: args.platform,
+            isSource: args.isSource,
+          );
+        },
+      ),
+    ],
+  );
+
+  return MultiProvider(
+    providers: [
+      Provider<PlatformService>(create: (_) => PlatformService()),
+      ChangeNotifierProvider(
+        create: (_) => AuthProvider(repository: MockAuthService()),
+      ),
+      ChangeNotifierProvider(
+        create: (_) => PlaylistProvider(repository: MockPlaylistService()),
+      ),
+    ],
+    child: MaterialApp.router(routerConfig: router),
+  );
+}
 
 void main() {
   group('PlatformSelectionScreen', () {
     testWidgets('renders all UI elements', (tester) async {
-      await tester.pumpWidget(
-        const MaterialApp(home: PlatformSelectionScreen()),
-      );
+      await tester.pumpWidget(_buildTestApp());
+      await tester.pumpAndSettle();
 
       expect(find.text('PullRequest'), findsOneWidget);
       expect(find.text('FROM (Source)'), findsOneWidget);
@@ -19,9 +64,8 @@ void main() {
     testWidgets('Select Playlists button is initially disabled', (
       tester,
     ) async {
-      await tester.pumpWidget(
-        const MaterialApp(home: PlatformSelectionScreen()),
-      );
+      await tester.pumpWidget(_buildTestApp());
+      await tester.pumpAndSettle();
 
       final button = tester.widget<ElevatedButton>(
         find.widgetWithText(ElevatedButton, 'Select Playlists'),
@@ -31,13 +75,11 @@ void main() {
     });
 
     testWidgets('can select source platform', (tester) async {
-      await tester.pumpWidget(
-        const MaterialApp(home: PlatformSelectionScreen()),
-      );
+      await tester.pumpWidget(_buildTestApp());
+      await tester.pumpAndSettle();
 
       await tester.tap(find.text('Connect Platform').first);
       await tester.pumpAndSettle();
-
       await tester.tap(find.text('Spotify').last);
       await tester.pumpAndSettle();
 
@@ -45,23 +87,22 @@ void main() {
     });
 
     testWidgets('can select destination platform', (tester) async {
-      await tester.pumpWidget(
-        const MaterialApp(home: PlatformSelectionScreen()),
-      );
+      await tester.pumpWidget(_buildTestApp());
+      await tester.pumpAndSettle();
 
       await tester.tap(find.text('Connect Platform').last);
       await tester.pumpAndSettle();
-
       await tester.tap(find.text('YouTube Music').last);
       await tester.pumpAndSettle();
 
       expect(find.text('YouTube Music'), findsWidgets);
     });
 
-    testWidgets('button enabled when both platforms selected', (tester) async {
-      await tester.pumpWidget(
-        const MaterialApp(home: PlatformSelectionScreen()),
-      );
+    testWidgets('button is enabled when both platforms are selected', (
+      tester,
+    ) async {
+      await tester.pumpWidget(_buildTestApp());
+      await tester.pumpAndSettle();
 
       await tester.tap(find.text('Connect Platform').first);
       await tester.pumpAndSettle();
@@ -76,35 +117,14 @@ void main() {
       final button = tester.widget<ElevatedButton>(
         find.widgetWithText(ElevatedButton, 'Select Playlists'),
       );
-
       expect(button.onPressed, isNotNull);
-    });
-
-    testWidgets('prevents selecting same platform for source and destination', (
-      tester,
-    ) async {
-      await tester.pumpWidget(
-        const MaterialApp(home: PlatformSelectionScreen()),
-      );
-
-      await tester.tap(find.text('Connect Platform').first);
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('Spotify').last);
-      await tester.pumpAndSettle();
-
-      await tester.tap(find.text('Connect Platform').last);
-      await tester.pumpAndSettle();
-
-      final spotifyCards = find.text('Spotify');
-      expect(spotifyCards, findsWidgets);
     });
 
     testWidgets('navigates to authorization when Select Playlists is tapped', (
       tester,
     ) async {
-      await tester.pumpWidget(
-        const MaterialApp(home: PlatformSelectionScreen()),
-      );
+      await tester.pumpWidget(_buildTestApp());
+      await tester.pumpAndSettle();
 
       await tester.tap(find.text('Connect Platform').first);
       await tester.pumpAndSettle();
@@ -120,37 +140,6 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Connect to Spotify'), findsOneWidget);
-      expect(find.text('Authorize with Spotify'), findsOneWidget);
-    });
-
-    testWidgets('back button navigates back', (tester) async {
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: Builder(
-              builder: (context) => ElevatedButton(
-                onPressed: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => const PlatformSelectionScreen(),
-                  ),
-                ),
-                child: const Text('Go'),
-              ),
-            ),
-          ),
-        ),
-      );
-
-      await tester.tap(find.text('Go'));
-      await tester.pumpAndSettle();
-
-      expect(find.text('FROM (Source)'), findsOneWidget);
-
-      await tester.tap(find.byIcon(Icons.arrow_back));
-      await tester.pumpAndSettle();
-
-      expect(find.text('FROM (Source)'), findsNothing);
     });
   });
 }

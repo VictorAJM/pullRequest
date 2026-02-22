@@ -3,7 +3,9 @@
     "allow": [
       "Bash(cd:*)",
       "Bash(tail:*)",
-      "Bash(cd /c/Users/victo/pullRequest/pull_request && git push origin main 2>&1)"
+      "Bash(cd /c/Users/victo/pullRequest/pull_request && git push origin main 2>&1)",
+      "Bash(cd /c/Users/victo/pullRequest/pull_request && flutter test 2>&1)",
+      "Bash(grep:*)"
     ]
   }
 }

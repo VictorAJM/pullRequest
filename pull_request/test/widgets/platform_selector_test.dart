@@ -1,20 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:pull_request/models/platform.dart';
+import 'package:pull_request/models/music_platform.dart';
 import 'package:pull_request/widgets/platform_selector.dart';
 
 void main() {
   group('PlatformSelector', () {
     const testPlatforms = [
-      Platform(
+      MusicPlatform(
         id: 'spotify',
         name: 'Spotify',
         iconPath: 'assets/icons/spotify_icon.png',
+        brandColor: Color(0xFF1DB954),
       ),
-      Platform(
-        id: 'youtube',
+      MusicPlatform(
+        id: 'youtube_music',
         name: 'YouTube Music',
         iconPath: 'assets/icons/youtube_music_icon.png',
+        brandColor: Color(0xFFFF0000),
       ),
     ];
 
@@ -57,7 +59,7 @@ void main() {
       expect(find.byIcon(Icons.add_circle_outline), findsOneWidget);
     });
 
-    testWidgets('shows selected platform when platform is selected', (
+    testWidgets('shows selected platform name when platform is set', (
       tester,
     ) async {
       await tester.pumpWidget(
@@ -77,7 +79,7 @@ void main() {
       expect(find.text('Spotify'), findsOneWidget);
     });
 
-    testWidgets('opens bottom sheet when Connect Platform is tapped', (
+    testWidgets('opens picker dialog when Connect Platform is tapped', (
       tester,
     ) async {
       await tester.pumpWidget(
@@ -100,9 +102,7 @@ void main() {
       expect(find.text('Select Platform'), findsOneWidget);
     });
 
-    testWidgets('displays all available platforms in bottom sheet', (
-      tester,
-    ) async {
+    testWidgets('displays all platforms in picker dialog', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -127,7 +127,7 @@ void main() {
     testWidgets('calls onPlatformSelected when platform is tapped', (
       tester,
     ) async {
-      Platform? selectedPlatform;
+      MusicPlatform? selected;
 
       await tester.pumpWidget(
         MaterialApp(
@@ -137,7 +137,7 @@ void main() {
               selectedPlatform: null,
               availablePlatforms: testPlatforms,
               disabledPlatformIds: const [],
-              onPlatformSelected: (platform) => selectedPlatform = platform,
+              onPlatformSelected: (p) => selected = p,
             ),
           ),
         ),
@@ -145,15 +145,14 @@ void main() {
 
       await tester.tap(find.text('Connect Platform'));
       await tester.pumpAndSettle();
-
       await tester.tap(find.text('Spotify').last);
       await tester.pumpAndSettle();
 
-      expect(selectedPlatform, isNotNull);
-      expect(selectedPlatform!.id, 'spotify');
+      expect(selected, isNotNull);
+      expect(selected!.id, 'spotify');
     });
 
-    testWidgets('closes bottom sheet after platform selection', (tester) async {
+    testWidgets('closes picker after platform selection', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -170,7 +169,6 @@ void main() {
 
       await tester.tap(find.text('Connect Platform'));
       await tester.pumpAndSettle();
-
       await tester.tap(find.text('Spotify').last);
       await tester.pumpAndSettle();
 

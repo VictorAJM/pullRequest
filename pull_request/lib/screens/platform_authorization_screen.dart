@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import '../core/router/app_router.dart';
 import '../core/theme/app_text_styles.dart';
 import '../models/authorization_state.dart';
 import '../models/music_platform.dart';
@@ -27,10 +28,22 @@ class _PlatformAuthorizationScreenState
     final authProvider = context.read<AuthProvider>();
     await authProvider.authorize(widget.platform);
 
-    if (mounted) context.pop();
+    if (mounted) _safeReturn();
   }
 
-  void _handleCancel() => context.pop();
+  void _handleCancel() => _safeReturn();
+
+  /// Pops if there is a previous route, otherwise goes to platform selection.
+  /// The fallback handles Android: when the OAuth callback intent fires,
+  /// GoRouter may reconstruct the stack while the browser is open, leaving
+  /// this route with nothing to pop to.
+  void _safeReturn() {
+    if (context.canPop()) {
+      context.pop();
+    } else {
+      context.go(AppRoutes.platformSelection);
+    }
+  }
 
   bool get _isAuthorizing =>
       context.watch<AuthProvider>().stateFor(widget.platform.id) ==

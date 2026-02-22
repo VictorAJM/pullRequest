@@ -4,7 +4,7 @@ import 'app.dart';
 import 'providers/auth_provider.dart';
 import 'providers/playlist_provider.dart';
 import 'providers/transfer_provider.dart';
-import 'services/mock_auth_service.dart';
+import 'services/spotify_auth_service.dart';
 import 'services/mock_playlist_service.dart';
 import 'services/mock_transfer_service.dart';
 import 'services/platform_service.dart';
@@ -15,7 +15,7 @@ void main() {
   // Instantiate service implementations.
   // To switch from mock to real APIs: replace these with the real
   // implementations — no provider or screen code changes required.
-  final authRepository = MockAuthService();
+  final authRepository = SpotifyAuthService();
   final playlistRepository = MockPlaylistService();
   final transferRepository = MockTransferService();
 

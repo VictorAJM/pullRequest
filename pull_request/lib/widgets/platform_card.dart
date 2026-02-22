@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import '../models/platform.dart';
+import '../models/music_platform.dart';
 import '../core/theme/app_colors.dart';
 
 class PlatformCard extends StatelessWidget {
-  final Platform platform;
+  final MusicPlatform platform;
   final bool isSelected;
   final bool isDisabled;
   final VoidCallback? onTap;
@@ -59,7 +59,7 @@ class PlatformCard extends StatelessWidget {
             if (isSelected && onClear != null)
               GestureDetector(
                 onTap: onClear,
-                child: Icon(Icons.close, color: Colors.white, size: 20),
+                child: const Icon(Icons.close, color: Colors.white, size: 20),
               ),
           ],
         ),

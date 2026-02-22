@@ -1,27 +1,30 @@
-import '../models/platform.dart';
+import 'package:flutter/material.dart';
+import '../models/music_platform.dart';
 
 class PlatformService {
-  static const List<Platform> _platforms = [
-    Platform(
+  static const List<MusicPlatform> _platforms = [
+    MusicPlatform(
       id: 'spotify',
       name: 'Spotify',
       iconPath: 'assets/icons/spotify_icon.png',
+      brandColor: Color(0xFF1DB954),
+      scopes: ['playlist-read-private', 'playlist-read-collaborative'],
     ),
-    Platform(
+    MusicPlatform(
       id: 'youtube_music',
       name: 'YouTube Music',
       iconPath: 'assets/icons/youtube_music_icon.png',
+      brandColor: Color(0xFFFF0000),
+      scopes: ['https://www.googleapis.com/auth/youtube.readonly'],
     ),
   ];
 
-  List<Platform> getAvailablePlatforms() {
-    return List.unmodifiable(_platforms);
-  }
+  List<MusicPlatform> getAvailablePlatforms() => List.unmodifiable(_platforms);
 
-  Platform? getPlatformById(String id) {
+  MusicPlatform? getPlatformById(String id) {
     try {
-      return _platforms.firstWhere((platform) => platform.id == id);
-    } catch (e) {
+      return _platforms.firstWhere((p) => p.id == id);
+    } catch (_) {
       return null;
     }
   }

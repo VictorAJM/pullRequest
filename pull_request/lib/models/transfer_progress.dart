@@ -22,23 +22,30 @@ class TransferProgress {
     return transferredSongs / totalSongs;
   }
 
+  /// A sentinel used to explicitly pass [null] through [copyWith].
+  static const _absent = Object();
+
   TransferProgress copyWith({
     String? playlistId,
     String? playlistName,
-    String? currentSongTitle,
+    Object? currentSongTitle = _absent,
     int? totalSongs,
     int? transferredSongs,
     TransferStatus? status,
-    String? errorMessage,
+    Object? errorMessage = _absent,
   }) {
     return TransferProgress(
       playlistId: playlistId ?? this.playlistId,
       playlistName: playlistName ?? this.playlistName,
-      currentSongTitle: currentSongTitle ?? this.currentSongTitle,
+      currentSongTitle: currentSongTitle == _absent
+          ? this.currentSongTitle
+          : currentSongTitle as String?,
       totalSongs: totalSongs ?? this.totalSongs,
       transferredSongs: transferredSongs ?? this.transferredSongs,
       status: status ?? this.status,
-      errorMessage: errorMessage ?? this.errorMessage,
+      errorMessage: errorMessage == _absent
+          ? this.errorMessage
+          : errorMessage as String?,
     );
   }
 }

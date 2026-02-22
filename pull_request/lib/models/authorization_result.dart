@@ -1,8 +1,8 @@
-import 'platform.dart';
+import 'music_platform.dart';
 
 class AuthorizationResult {
   final bool isAuthorized;
-  final Platform platform;
+  final MusicPlatform platform;
   final String? errorMessage;
 
   const AuthorizationResult({
@@ -11,11 +11,14 @@ class AuthorizationResult {
     this.errorMessage,
   });
 
-  factory AuthorizationResult.success(Platform platform) {
+  factory AuthorizationResult.success(MusicPlatform platform) {
     return AuthorizationResult(isAuthorized: true, platform: platform);
   }
 
-  factory AuthorizationResult.failure(Platform platform, String errorMessage) {
+  factory AuthorizationResult.failure(
+    MusicPlatform platform,
+    String errorMessage,
+  ) {
     return AuthorizationResult(
       isAuthorized: false,
       platform: platform,

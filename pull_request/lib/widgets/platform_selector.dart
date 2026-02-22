@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
-import '../models/platform.dart';
+import '../models/music_platform.dart';
 import '../core/theme/app_colors.dart';
 import 'platform_card.dart';
 
 class PlatformSelector extends StatelessWidget {
   final String title;
-  final Platform? selectedPlatform;
-  final List<Platform> availablePlatforms;
+  final MusicPlatform? selectedPlatform;
+  final List<MusicPlatform> availablePlatforms;
   final List<String> disabledPlatformIds;
-  final Function(Platform) onPlatformSelected;
+  final Function(MusicPlatform) onPlatformSelected;
   final VoidCallback? onClear;
 
   const PlatformSelector({
@@ -36,7 +36,7 @@ class PlatformSelector extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
+                  const Text(
                     'Select Platform',
                     style: TextStyle(
                       fontSize: 20,
@@ -45,7 +45,7 @@ class PlatformSelector extends StatelessWidget {
                     ),
                   ),
                   IconButton(
-                    icon: Icon(Icons.close, color: AppColors.darkBlue),
+                    icon: const Icon(Icons.close, color: AppColors.darkBlue),
                     onPressed: () => Navigator.pop(context),
                     padding: EdgeInsets.zero,
                     constraints: const BoxConstraints(),
@@ -89,7 +89,7 @@ class PlatformSelector extends StatelessWidget {
         children: [
           Text(
             title,
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w600,
               color: AppColors.darkBlue,
@@ -110,14 +110,14 @@ class PlatformSelector extends StatelessWidget {
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(color: AppColors.darkBlue, width: 2),
                 ),
-                child: Row(
+                child: const Row(
                   children: [
                     Icon(
                       Icons.add_circle_outline,
                       color: AppColors.darkBlue,
                       size: 32,
                     ),
-                    const SizedBox(width: 12),
+                    SizedBox(width: 12),
                     Text(
                       'Connect Platform',
                       style: TextStyle(

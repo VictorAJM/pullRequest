@@ -76,9 +76,16 @@ class SpotifyPlaylistService implements PlaylistRepository {
 
       // 2. Paginate tracks.
       final songs = <Song>[];
-      String? nextUrl =
-          '$_baseUrl/playlists/$playlistId/tracks?limit=100'
-          '&fields=next,items(track(id,name,artists,album.name,duration_ms,is_local))';
+      // Use Uri.replace so queryParameters are properly percent-encoded.
+      // market=from_token avoids 403s on region-restricted content.
+      String? nextUrl = Uri.parse('$_baseUrl/playlists/$playlistId/tracks')
+          .replace(queryParameters: {
+            'limit': '100',
+            'market': 'from_token',
+            'fields':
+                'next,items(track(id,name,artists,album(name),duration_ms,is_local))',
+          })
+          .toString();
 
       while (nextUrl != null) {
         final tracksResponse =

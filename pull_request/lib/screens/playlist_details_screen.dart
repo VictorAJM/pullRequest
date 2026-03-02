@@ -125,7 +125,7 @@ class _PlaylistDetailsScreenState extends State<PlaylistDetailsScreen> {
               Icon(Icons.music_note, size: 16, color: Colors.grey[600]),
               const SizedBox(width: 4),
               Text(
-                '${playlist.songs.length} songs',
+                '${playlist.songs.isNotEmpty ? playlist.songs.length : playlist.trackCount} songs',
                 style: AppTextStyles.label.copyWith(color: Colors.grey[600]),
               ),
               const SizedBox(width: 16),

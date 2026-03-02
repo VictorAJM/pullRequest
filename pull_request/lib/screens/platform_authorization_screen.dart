@@ -25,21 +25,24 @@ class PlatformAuthorizationScreen extends StatefulWidget {
 class _PlatformAuthorizationScreenState
     extends State<PlatformAuthorizationScreen> {
   Future<void> _handleAuthorize() async {
-    final authProvider = context.read<AuthProvider>();
-    await authProvider.authorize(widget.platform);
-
-    if (mounted) _safeReturn();
+    final result =
+        await context.read<AuthProvider>().authorize(widget.platform);
+    if (!mounted) return;
+    _safeReturn(result.isAuthorized);
   }
 
-  void _handleCancel() => _safeReturn();
+  void _handleCancel() => _safeReturn(false);
 
-  /// Pops if there is a previous route, otherwise goes to platform selection.
-  /// The fallback handles Android: when the OAuth callback intent fires,
-  /// GoRouter may reconstruct the stack while the browser is open, leaving
-  /// this route with nothing to pop to.
-  void _safeReturn() {
+  /// Pops with [authorized] as the result so the caller can react to success
+  /// or failure without reading provider state across an async gap.
+  ///
+  /// Fallback: if there is nothing to pop (Android edge-case — the OAuth
+  /// callback intent can restart the Activity and clear the back-stack),
+  /// we go to platform selection so the user can restart the transfer instead
+  /// of being silently sent home.
+  void _safeReturn(bool authorized) {
     if (context.canPop()) {
-      context.pop();
+      context.pop(authorized);
     } else {
       context.go(AppRoutes.platformSelection);
     }

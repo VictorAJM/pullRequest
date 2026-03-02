@@ -24,8 +24,15 @@
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
-            <!-- OAuth redirect callback — required by flutter_web_auth_2 -->
-            <intent-filter>
+        </activity>
+        <!-- OAuth redirect callback — must be on flutter_web_auth_2's CallbackActivity,
+             NOT on MainActivity. Registering it on MainActivity would cause Flutter's
+             engine to forward the pullrequest://callback URL to GoRouter, which would
+             navigate to '/' and wipe the navigation stack mid-flow. -->
+        <activity
+            android:name="com.linusu.flutter_web_auth_2.CallbackActivity"
+            android:exported="true">
+            <intent-filter android:label="flutter_web_auth_2">
                 <action android:name="android.intent.action.VIEW"/>
                 <category android:name="android.intent.category.DEFAULT"/>
                 <category android:name="android.intent.category.BROWSABLE"/>

@@ -3,7 +3,6 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../core/router/app_router.dart';
 import '../core/theme/app_colors.dart';
-import '../models/authorization_state.dart';
 import '../models/music_platform.dart';
 import '../providers/auth_provider.dart';
 import '../providers/playlist_provider.dart';
@@ -57,7 +56,8 @@ class _PlatformSelectionScreenState extends State<PlatformSelectionScreen> {
     playlistProvider.clearSelection();
 
     // ── Authorize source ───────────────────────────────────────────────────
-    await context.push(
+    // The auth screen pops with `true` on success, `false` on cancel/failure.
+    final sourceAuthorized = await context.push<bool>(
       AppRoutes.authorize,
       extra: AuthorizationArgs(
         platform: _sourcePlatform!,
@@ -66,8 +66,7 @@ class _PlatformSelectionScreenState extends State<PlatformSelectionScreen> {
     );
 
     if (!mounted) return;
-    if (authProvider.stateFor(_sourcePlatform!.id) !=
-        AuthorizationState.authorized) {
+    if (sourceAuthorized != true) {
       _showAuthorizationError(
         _sourcePlatform!.name,
         authProvider.errorFor(_sourcePlatform!.id) ??
@@ -77,7 +76,7 @@ class _PlatformSelectionScreenState extends State<PlatformSelectionScreen> {
     }
 
     // ── Authorize destination ──────────────────────────────────────────────
-    await context.push(
+    final destAuthorized = await context.push<bool>(
       AppRoutes.authorize,
       extra: AuthorizationArgs(
         platform: _destinationPlatform!,
@@ -86,8 +85,7 @@ class _PlatformSelectionScreenState extends State<PlatformSelectionScreen> {
     );
 
     if (!mounted) return;
-    if (authProvider.stateFor(_destinationPlatform!.id) !=
-        AuthorizationState.authorized) {
+    if (destAuthorized != true) {
       _showAuthorizationError(
         _destinationPlatform!.name,
         authProvider.errorFor(_destinationPlatform!.id) ??

@@ -8,7 +8,8 @@
       "Bash(grep:*)",
       "Bash(cd /c/Users/victo/pullRequest/pull_request && flutter analyze lib/screens/playlist_details_screen.dart lib/providers/playlist_provider.dart lib/widgets/common/loading_song_card.dart 2>&1)",
       "Bash(cd /c/Users/victo/pullRequest/pull_request && flutter test test/providers/playlist_provider_test.dart 2>&1)",
-      "Bash(cd /c/Users/victo/pullRequest/pull_request && flutter analyze 2>&1)"
+      "Bash(cd /c/Users/victo/pullRequest/pull_request && flutter analyze 2>&1)",
+      "Bash(flutter test:*)"
     ]
   }
 }

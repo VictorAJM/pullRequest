@@ -44,4 +44,47 @@ export const playlistsRoutes = new Elysia({ prefix: 'playlists' })
         t.Literal('spotify')
       ])
     })
+  })
+  .get('/contents', async ({ query, headers, status }) => {
+    const { playlist_id, platform } = query;
+
+    const deviceId = headers['x-device-id'];
+    if (!deviceId) {
+      return;
+    }
+
+    if (platform === 'ytm') {
+      const youtube = createYouTubeClient(deviceId);
+      if (!youtube) return status(401, 'User not authenticated with Google');
+
+      const contents: youtube_v3.Schema$PlaylistItemListResponse[] = [];
+      let paginationToken: string | undefined = undefined;
+
+      while (true) {
+        const response: any = await youtube.playlistItems.list({
+          part: ['snippet'],
+          playlistId: playlist_id,
+          maxResults: 50,
+          pageToken: paginationToken
+        });
+
+        if (response.data.items) {
+          contents.push(...response.data.items);
+        }
+
+        paginationToken = response.data.nextPageToken ?? undefined;
+        if (!paginationToken) break;
+      }
+
+      return contents;
+    }
+
+  }, {
+    query: t.Object({
+      playlist_id: t.String(),
+      platform: t.Union([
+        t.Literal('ytm'),
+        t.Literal('spotify')
+      ])
+    })
   });

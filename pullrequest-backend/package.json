@@ -8,6 +8,7 @@
   "dependencies": {
     "@spotify/web-api-ts-sdk": "^1.2.0",
     "elysia": "latest",
+    "googleapis": "^171.4.0",
     "ytmusic-api": "^5.3.1"
   },
   "devDependencies": {

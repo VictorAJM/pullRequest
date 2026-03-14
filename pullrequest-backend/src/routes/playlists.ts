@@ -1,6 +1,7 @@
 import { Elysia, t } from 'elysia';
 import { youtube_v3 } from 'googleapis';
 import { createYouTubeClient } from '@services/youtube_api_client';
+import { createSpotifyClient } from '@services/spotify_api_client';
 
 export const playlistsRoutes = new Elysia({ prefix: 'playlists' })
   .get('/list', async ({ query, headers, status }) => {
@@ -32,6 +33,27 @@ export const playlistsRoutes = new Elysia({ prefix: 'playlists' })
 
         paginationToken = response.data.nextPageToken ?? undefined;
         if (!paginationToken) break;
+      }
+
+      return playlists;
+    } else {
+      const spotify = await createSpotifyClient(deviceId);
+      if (!spotify) return status(401, 'User not authenticated with Spotify');
+
+      let offset = 0;
+      const playlists = [];
+
+      while (true) {
+        const response = await spotify.currentUser.playlists.playlists(
+          50,
+          offset
+        );
+
+        playlists.push(...response.items);
+
+        if (response.next) {
+          offset += 50;
+        } else break;
       }
 
       return playlists;
@@ -77,6 +99,8 @@ export const playlistsRoutes = new Elysia({ prefix: 'playlists' })
       }
 
       return contents;
+    } else {
+
     }
 
   }, {

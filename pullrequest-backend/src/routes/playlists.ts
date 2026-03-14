@@ -100,7 +100,29 @@ export const playlistsRoutes = new Elysia({ prefix: 'playlists' })
 
       return contents;
     } else {
+      const spotify = await createSpotifyClient(deviceId);
+      if (!spotify) return status(401, 'User not authenticated with Spotify');
 
+      let offset = 0;
+      const contents = [];
+
+      while (true) {
+        const response = await spotify.playlists.getPlaylistItems(
+          playlist_id,
+          undefined,
+          undefined,
+          50,
+          offset
+        );
+
+        contents.push(...response.items);
+
+        if (response.next) {
+          offset += 50;
+        } else break;
+      }
+
+      return contents;
     }
 
   }, {

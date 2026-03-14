@@ -30,3 +30,24 @@ export function getOauthTokens(deviceId: string, platform: Platform): {
     $deviceId: deviceId
   }) as { oauth_token: string, refresh_token: string, expires_at: number } | null;
 }
+
+export function saveOauthTokens(
+  deviceId: string,
+  platform: Platform,
+  oauthToken: string,
+  refreshToken: string,
+  expiresAt: number
+) {
+  db.prepare(`
+      UPDATE users SET 
+        ${platform}_oauth_token = $oauth_token, 
+        ${platform}_refresh_token = $refresh_token, 
+        ${platform}_expires_at = $expiry_date 
+      WHERE device_id = $device_id
+    `).run({
+    $oauth_token: oauthToken,
+    $refresh_token: refreshToken,
+    $expiry_date: expiresAt,
+    $device_id: deviceId
+  });
+}

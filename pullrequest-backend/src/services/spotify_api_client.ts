@@ -3,9 +3,14 @@ import { getOauthTokens, saveAccessTokens } from './database';
 import { AuthData } from "@lib/custom_types";
 
 async function refreshAuthToken(refreshToken: string): Promise<AuthData> {
-  const authHeader = Buffer.from(
-    `{${process.env.SPOTIFY_CLIENT_ID}:${process.env.SPOTIFY_SECRET}}`
-  ).toString('base64');
+  const clientId = process.env.SPOTIFY_CLIENT_ID;
+  const clientSecret = process.env.SPOTIFY_SECRET;
+
+  if (!clientId || !clientSecret)
+    throw new Error("Failed to load Spotify client credentials");
+
+  const authHeader = Buffer.from(`${clientId}:${clientSecret}`)
+    .toString('base64');
 
   const response = await fetch("https://accounts.spotify.com/api/token", {
     method: "POST",
@@ -20,6 +25,7 @@ async function refreshAuthToken(refreshToken: string): Promise<AuthData> {
   });
 
   if (!response.ok) {
+    console.log(await response.text());
     throw new Error("Failed to refresh Spotify token");
   }
 

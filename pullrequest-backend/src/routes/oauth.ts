@@ -1,5 +1,7 @@
 import { Elysia, t } from 'elysia';
-import { db } from '@services/database';
+import { saveAccessTokens } from '@services/database';
+import { getAccessTokenFromCode as getSpotifyAccessTokenFromCode } from '@services/spotify_api_client';
+import { getAccessTokenFromCode as getYoutubeAccessTokenFromCode } from '@services/youtube_api_client';
 
 export const oauthRoute = new Elysia({ prefix: 'oauth' })
   .post('register_token', ({ headers, body }) => {
@@ -10,23 +12,15 @@ export const oauthRoute = new Elysia({ prefix: 'oauth' })
       return;
     }
 
-    db.prepare(`
-      UPDATE users
-      SET
-        ${platform === 'ytm' ?
-        `ytm_oauth_token = $oauthToken,
-        ytm_refresh_token = $refreshToken,
-        ytm_expires_at = $expiresAt` :
-        `spotify_oauth_token = $oauthToken,
-        spotify_refresh_token = $refreshToken,
-        spotify_expires_at = $expiresAt`}
-      WHERE device_id = $deviceId
-    `).run({
-          $oauthToken: oauth_token,
-          $refreshToken: refresh_token,
-          $expiresAt: Date.now() + (expires_in - 60) * 1000,
-          $deviceId: deviceId
-        });
+    saveAccessTokens(
+      deviceId,
+      platform,
+      {
+        accessToken: oauth_token,
+        refreshToken: refresh_token,
+        expiresAt: Date.now() + (expires_in - 60) * 1000
+      }
+    );
 
     return {
       success: true,
@@ -41,5 +35,42 @@ export const oauthRoute = new Elysia({ prefix: 'oauth' })
       oauth_token: t.String(),
       refresh_token: t.String(),
       expires_in: t.Number()
+    })
+  }).post('register_code', async ({ headers, body, status }) => {
+    const { platform, code } = body;
+
+    const deviceId = headers['x-device-id'];
+    if (!deviceId) {
+      return;
+    }
+
+    if (platform === 'ytm') {
+      const authData = await getYoutubeAccessTokenFromCode(code);
+      if (!authData) {
+        console.log('Oh fucky :(');
+        return status(500, "Failed to exange Youtube code.");
+      }
+
+      saveAccessTokens(deviceId, 'ytm', authData);
+    } else {
+      const authData = await getSpotifyAccessTokenFromCode(code);
+      if (!authData) {
+        return status(500, "Failed to exange Spotify code.");
+      }
+
+      saveAccessTokens(deviceId, 'spotify', authData);
+    }
+
+    return {
+      success: true,
+      message: "Tokens saved"
+    };
+  }, {
+    body: t.Object({
+      platform: t.Union([
+        t.Literal('ytm'),
+        t.Literal('spotify')
+      ]),
+      code: t.String(),
     })
   });

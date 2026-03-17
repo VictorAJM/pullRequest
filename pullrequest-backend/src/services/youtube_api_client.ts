@@ -1,5 +1,13 @@
 import { google, youtube_v3 } from 'googleapis';
-import { getOauthTokens, saveOauthTokens } from './database';
+import { OAuth2Client } from 'google-auth-library';
+import { getOauthTokens, saveAccessTokens } from './database';
+import { AuthData } from '@lib/custom_types';
+
+const oauthClient = new OAuth2Client(
+  process.env.GOOGLE_CLIENT_ID,
+  process.env.GOOGLE_CLIENT_SECRET,
+  process.env.GOOGLE_REDIRECT_URI
+);
 
 export function createYouTubeClient(deviceId: string): youtube_v3.Youtube | null {
   const result = getOauthTokens(deviceId, 'ytm');
@@ -26,14 +34,33 @@ export function createYouTubeClient(deviceId: string): youtube_v3.Youtube | null
     const newExpiry = tokens.expiry_date || (Date.now() + 3600000);
     const refreshToken = tokens.refresh_token || result.refresh_token;
 
-    saveOauthTokens(
+    saveAccessTokens(
       deviceId,
       'ytm',
-      tokens.access_token,
-      refreshToken,
-      newExpiry
+      {
+        accessToken: tokens.access_token,
+        refreshToken,
+        expiresAt: newExpiry
+      }
     );
   });
 
   return google.youtube({ version: 'v3', auth: oauth2Client });
+}
+
+export async function getAccessTokenFromCode(code: string): Promise<AuthData | null> {
+  try {
+    const { tokens } = await oauthClient.getToken(code);
+
+    if (!tokens.access_token || !tokens.refresh_token || !tokens.expiry_date)
+      return null;
+
+    return {
+      accessToken: tokens.access_token,
+      refreshToken: tokens.refresh_token,
+      expiresAt: tokens.expiry_date
+    };
+  } catch (error) {
+    return null;
+  }
 }

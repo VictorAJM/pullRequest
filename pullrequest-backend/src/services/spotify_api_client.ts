@@ -1,7 +1,8 @@
 import { SpotifyApi } from "@spotify/web-api-ts-sdk";
-import { getOauthTokens, saveOauthTokens } from './database';
+import { getOauthTokens, saveAccessTokens } from './database';
+import { AuthData } from "@lib/custom_types";
 
-async function refreshAuthToken(refreshToken: string) {
+async function refreshAuthToken(refreshToken: string): Promise<AuthData> {
   const authHeader = Buffer.from(
     `{${process.env.SPOTIFY_CLIENT_ID}:${process.env.SPOTIFY_SECRET}}`
   ).toString('base64');
@@ -41,12 +42,10 @@ export async function createSpotifyClient(deviceId: string):
   if (result.expires_at - Date.now() < 30 * 1000) {
     const newTokens = await refreshAuthToken(result.refresh_token);
 
-    saveOauthTokens(
+    saveAccessTokens(
       deviceId,
       'spotify',
-      newTokens.accessToken,
-      newTokens.refreshToken,
-      newTokens.expiresAt
+      newTokens
     );
 
     oauth_token = newTokens.accessToken;
@@ -60,4 +59,38 @@ export async function createSpotifyClient(deviceId: string):
     token_type: "Bearer",
     expires_in: Math.floor((expires_at - Date.now()) / 1000),
   });
+}
+
+export async function getAccessTokenFromCode(code: string): Promise<AuthData | null> {
+  const redirectUri = process.env.SPOTIFY_REDIRECT_URI;
+  const clientId = process.env.SPOTIFY_CLIENT_ID;
+  const clientSecret = process.env.SPOTIFY_SECRET;
+
+  if (!redirectUri || !clientId || !clientSecret) return null;
+
+  const authHeader = Buffer.from(`${clientId}:${clientSecret}`)
+    .toString('base64');
+
+  const response = await fetch('https://accounts.spotify.com/api/token', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+      'Authorization': `Basic ${authHeader}`
+    },
+    body: new URLSearchParams({
+      grant_type: 'authorization_code',
+      code: code,
+      redirect_uri: redirectUri
+    })
+  });
+
+  if (!response.ok) return null;
+
+  const data = await response.json();
+
+  return {
+    accessToken: data.access_token,
+    refreshToken: data.refresh_token,
+    expiresAt: Date.now() + (data.expires_in - 60) * 1000
+  };
 }

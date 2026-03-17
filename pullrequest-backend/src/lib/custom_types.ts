@@ -18,3 +18,9 @@ export interface User {
     spotify_refresh_token: string | null,
     spotify_expires_at: number
 }
+
+export interface AuthData {
+    accessToken: string,
+    refreshToken: string,
+    expiresAt: number
+}

@@ -1,5 +1,5 @@
 import { Database } from "bun:sqlite";
-import { Platform } from "@lib/custom_types";
+import { Platform, AuthData } from "@lib/custom_types";
 
 export const db = new Database("mydb.sqlite");
 db.run(`
@@ -31,12 +31,10 @@ export function getOauthTokens(deviceId: string, platform: Platform): {
   }) as { oauth_token: string, refresh_token: string, expires_at: number } | null;
 }
 
-export function saveOauthTokens(
+export function saveAccessTokens(
   deviceId: string,
   platform: Platform,
-  oauthToken: string,
-  refreshToken: string,
-  expiresAt: number
+  authData: AuthData
 ) {
   db.prepare(`
       UPDATE users SET 
@@ -45,9 +43,9 @@ export function saveOauthTokens(
         ${platform}_expires_at = $expiry_date 
       WHERE device_id = $device_id
     `).run({
-    $oauth_token: oauthToken,
-    $refresh_token: refreshToken,
-    $expiry_date: expiresAt,
+    $oauth_token: authData.accessToken,
+    $refresh_token: authData.refreshToken,
+    $expiry_date: authData.expiresAt,
     $device_id: deviceId
   });
 }

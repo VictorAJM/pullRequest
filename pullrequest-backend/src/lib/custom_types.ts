@@ -24,3 +24,25 @@ export interface AuthData {
     refreshToken: string,
     expiresAt: number
 }
+
+export interface Thumbnail {
+    url: string,
+    height: number,
+    width: number
+}
+
+export interface Playlist {
+    platform: Platform,
+    id: string,
+    title: string,
+    itemCount: number,
+    thumbnail: Thumbnail
+}
+
+export interface PlaylistItem {
+    platform: Platform,
+    id: string,
+    title: string,
+    artist: string,
+    thumbnail: Thumbnail
+}

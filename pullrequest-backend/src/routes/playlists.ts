@@ -2,6 +2,8 @@ import { Elysia, t } from 'elysia';
 import { youtube_v3 } from 'googleapis';
 import { createYouTubeClient } from '@services/youtube_api_client';
 import { createSpotifyClient } from '@services/spotify_api_client';
+import { SimplifiedPlaylist, PlaylistedTrack, Track } from '@spotify/web-api-ts-sdk'
+import { Playlist, PlaylistItem } from '@lib/custom_types';
 
 export const playlistsRoutes = new Elysia({ prefix: 'playlists' })
   .get('/list', async ({ query, headers, status }) => {
@@ -35,13 +37,28 @@ export const playlistsRoutes = new Elysia({ prefix: 'playlists' })
         if (!paginationToken) break;
       }
 
-      return playlists;
+      const filteredPlaylists: Playlist[] = playlists.map(playlist => ({
+        platform: 'ytm',
+        id: playlist.id || '',
+        title: playlist.snippet?.localized?.title || '',
+        itemCount: playlist.contentDetails?.itemCount || 0,
+        thumbnail: (playlist.snippet?.thumbnails?.high?.url &&
+          playlist.snippet?.thumbnails?.high?.width &&
+          playlist.snippet?.thumbnails?.high?.height) ? {
+          url: playlist.snippet.thumbnails.high.url,
+          width: playlist.snippet.thumbnails.high.width,
+          height: playlist.snippet.thumbnails.high.height
+        } :
+          { url: '', height: 0, width: 0 }
+      }));
+
+      return filteredPlaylists;
     } else {
       const spotify = await createSpotifyClient(deviceId);
       if (!spotify) return status(401, 'User not authenticated with Spotify');
 
       let offset = 0;
-      const playlists = [];
+      const playlists: SimplifiedPlaylist[] = [];
 
       while (true) {
         const response = await spotify.currentUser.playlists.playlists(
@@ -56,7 +73,15 @@ export const playlistsRoutes = new Elysia({ prefix: 'playlists' })
         } else break;
       }
 
-      return playlists;
+      const filteredPlaylists: Playlist[] = playlists.map(playlist => ({
+        platform: 'spotify',
+        id: playlist.id,
+        title: playlist.name,
+        itemCount: playlist.tracks?.total || 0,
+        thumbnail: playlist.images[0]
+      }));
+
+      return filteredPlaylists;
     }
 
   }, {
@@ -79,7 +104,7 @@ export const playlistsRoutes = new Elysia({ prefix: 'playlists' })
       const youtube = createYouTubeClient(deviceId);
       if (!youtube) return status(401, 'User not authenticated with Google');
 
-      const contents: youtube_v3.Schema$PlaylistItemListResponse[] = [];
+      const contents: youtube_v3.Schema$PlaylistItem[] = [];
       let paginationToken: string | undefined = undefined;
 
       while (true) {
@@ -98,13 +123,30 @@ export const playlistsRoutes = new Elysia({ prefix: 'playlists' })
         if (!paginationToken) break;
       }
 
-      return contents;
+      const filteredContents: PlaylistItem[] = contents.map(item => ({
+        platform: 'ytm',
+        id: item.snippet?.resourceId?.videoId || '',
+        title: item.snippet?.title || '',
+        artist: item.snippet?.videoOwnerChannelTitle ?
+          item.snippet?.videoOwnerChannelTitle.replace(/\s-\sTopic\s*$/, "")
+          : "??",
+        thumbnail: (item.snippet?.thumbnails?.high?.url &&
+          item.snippet?.thumbnails?.high?.width &&
+          item.snippet?.thumbnails?.high?.height) ? {
+          url: item.snippet.thumbnails.high.url,
+          width: item.snippet.thumbnails.high.width,
+          height: item.snippet.thumbnails.high.height
+        } :
+          { url: '', height: 0, width: 0 }
+      }));
+
+      return filteredContents;
     } else {
       const spotify = await createSpotifyClient(deviceId);
       if (!spotify) return status(401, 'User not authenticated with Spotify');
 
       let offset = 0;
-      const contents = [];
+      const contents: PlaylistedTrack<Track>[] = [];
 
       while (true) {
         const response = await spotify.playlists.getPlaylistItems(
@@ -122,7 +164,15 @@ export const playlistsRoutes = new Elysia({ prefix: 'playlists' })
         } else break;
       }
 
-      return contents;
+      const filteredContents: PlaylistItem[] = contents.map(item => ({
+        platform: 'spotify',
+        id: item.track.id,
+        title: item.track.name,
+        artist: item.track.artists[0].name,
+        thumbnail: item.track.album.images[0]
+      }));
+
+      return filteredContents;
     }
 
   }, {

@@ -1,3 +1,5 @@
+import { z } from 'zod';
+
 export type Platform = "ytm" | "spotify";
 
 export interface Track {
@@ -45,4 +47,39 @@ export interface PlaylistItem {
     title: string,
     artist: string,
     thumbnail: Thumbnail
+}
+
+const SpotifyItemSchema = z.object({
+    item: z.object({
+        id: z.string(),
+        name: z.string(),
+        album: z.object({
+            images: z.array(z.object({
+                url: z.string(),
+                height: z.number(),
+                width: z.number()
+            }))
+        }),
+        artists: z.array(z.object({
+            name: z.string()
+        }))
+    })
+});
+
+export const SpotifyPlaylistItemsSchema = z.object({
+    total: z.number(),
+    items: z.array(SpotifyItemSchema)
+}).transform((data) => {
+    return {
+        ...data,
+        items: data.items
+            .map((item) => SpotifyItemSchema.safeParse(item))
+            .filter((result) => result.success)
+            .map((result) => result.data),
+    };
+});
+
+export interface PlaylistItems {
+    next: boolean,
+    items: PlaylistItem[]
 }

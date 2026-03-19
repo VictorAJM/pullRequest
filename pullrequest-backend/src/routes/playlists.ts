@@ -1,8 +1,8 @@
 import { Elysia, t } from 'elysia';
 import { youtube_v3 } from 'googleapis';
 import { createYouTubeClient } from '@services/youtube_api_client';
-import { createSpotifyClient } from '@services/spotify_api_client';
-import { SimplifiedPlaylist, PlaylistedTrack, Track } from '@spotify/web-api-ts-sdk'
+import { createSpotifyClient, getPlaylistItems } from '@services/spotify_api_client';
+import { PlaylistedTrack, Track, SimplifiedPlaylist } from '@spotify/web-api-ts-sdk'
 import { Playlist, PlaylistItem } from '@lib/custom_types';
 
 export const playlistsRoutes = new Elysia({ prefix: 'playlists' })
@@ -73,11 +73,14 @@ export const playlistsRoutes = new Elysia({ prefix: 'playlists' })
         } else break;
       }
 
+      if (playlists.length > 0)
+        console.log(playlists[0]);
+
       const filteredPlaylists: Playlist[] = playlists.map(playlist => ({
         platform: 'spotify',
         id: playlist.id,
         title: playlist.name,
-        itemCount: playlist.tracks?.total || 0,
+        itemCount: playlist.items.total,
         thumbnail: playlist.images[0]
       }));
 
@@ -142,37 +145,26 @@ export const playlistsRoutes = new Elysia({ prefix: 'playlists' })
 
       return filteredContents;
     } else {
+
       const spotify = await createSpotifyClient(deviceId);
       if (!spotify) return status(401, 'User not authenticated with Spotify');
 
       let offset = 0;
-      const contents: PlaylistedTrack<Track>[] = [];
+      const contents: PlaylistItem[] = [];
 
       while (true) {
-        const response = await spotify.playlists.getPlaylistItems(
-          playlist_id,
-          undefined,
-          undefined,
-          50,
-          offset
-        );
+        const response = await getPlaylistItems(playlist_id, deviceId, 100, offset);
+
+        if (!response) break;
 
         contents.push(...response.items);
 
         if (response.next) {
-          offset += 50;
+          offset += 100;
         } else break;
       }
 
-      const filteredContents: PlaylistItem[] = contents.map(item => ({
-        platform: 'spotify',
-        id: item.track.id,
-        title: item.track.name,
-        artist: item.track.artists[0].name,
-        thumbnail: item.track.album.images[0]
-      }));
-
-      return filteredContents;
+      return contents;
     }
 
   }, {

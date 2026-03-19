@@ -1,6 +1,6 @@
 import { SpotifyApi } from "@spotify/web-api-ts-sdk";
 import { getOauthTokens, saveAccessTokens } from './database';
-import { AuthData } from "@lib/custom_types";
+import { AuthData, SpotifyPlaylistItemsSchema, PlaylistItems } from "@lib/custom_types";
 
 async function refreshAuthToken(refreshToken: string): Promise<AuthData> {
   const clientId = process.env.SPOTIFY_CLIENT_ID;
@@ -98,5 +98,53 @@ export async function getAccessTokenFromCode(code: string): Promise<AuthData | n
     accessToken: data.access_token,
     refreshToken: data.refresh_token,
     expiresAt: Date.now() + (data.expires_in - 60) * 1000
+  };
+}
+
+export async function getPlaylistItems(
+  playlistId: string,
+  deviceId: string,
+  limit: number,
+  offset: number
+): Promise<PlaylistItems | null> {
+  const tokens = getOauthTokens(deviceId, 'spotify');
+
+  const result = getOauthTokens(deviceId, 'spotify');
+  if (!result) return null;
+
+  let { oauth_token, refresh_token, expires_at } = result;
+
+  if (result.expires_at - Date.now() < 30 * 1000) {
+    const newTokens = await refreshAuthToken(result.refresh_token);
+
+    saveAccessTokens(
+      deviceId,
+      'spotify',
+      newTokens
+    );
+
+    oauth_token = newTokens.accessToken;
+    refresh_token = newTokens.refreshToken;
+    expires_at = newTokens.expiresAt;
+  }
+
+  const res = await fetch(
+    `https://api.spotify.com/v1/playlists/${playlistId}/items?limit=${limit}&offset=${offset}`,
+    { headers: { Authorization: `Bearer ${oauth_token}` } }
+  );
+  if (!res.ok) throw new Error(`Spotify error: ${res.status}`);
+  const data = await res.json();
+
+  const filteredData = SpotifyPlaylistItemsSchema.parse(data);
+
+  return {
+    items: filteredData.items.map(item => ({
+      platform: 'spotify',
+      id: item.item.id,
+      title: item.item.name,
+      artist: item.item.artists[0].name,
+      thumbnail: item.item.album.images[0]
+    })),
+    next: (offset + limit < filteredData.total)
   };
 }

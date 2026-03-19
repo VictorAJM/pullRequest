@@ -2,7 +2,7 @@ import { Elysia, t } from 'elysia';
 import { youtube_v3 } from 'googleapis';
 import { createYouTubeClient } from '@services/youtube_api_client';
 import { createSpotifyClient, getPlaylistItems } from '@services/spotify_api_client';
-import { PlaylistedTrack, Track, SimplifiedPlaylist } from '@spotify/web-api-ts-sdk'
+import { SimplifiedPlaylist } from '@spotify/web-api-ts-sdk'
 import { Playlist, PlaylistItem } from '@lib/custom_types';
 
 export const playlistsRoutes = new Elysia({ prefix: 'playlists' })

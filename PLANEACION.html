@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Planeación del Proyecto — PullRequest</title>
+  <style>
+    @page {
+      size: A4;
+      margin: 2cm 2.2cm;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      font-size: 11pt;
+      line-height: 1.5;
+      color: #1a1a1a;
+      max-width: 210mm;
+      margin: 0 auto;
+      padding: 2cm 2.2cm;
+      background: #fff;
+    }
+
+    /* ---- Cover / Header ---- */
+    .cover {
+      text-align: center;
+      padding: 40px 0 30px;
+      border-bottom: 3px solid #1DB954;
+      margin-bottom: 30px;
+    }
+    .cover h1 {
+      font-size: 26pt;
+      color: #1a1a1a;
+      margin-bottom: 8px;
+      letter-spacing: -0.5px;
+    }
+    .cover .subtitle {
+      font-size: 13pt;
+      color: #555;
+      margin-bottom: 20px;
+    }
+    .cover-meta {
+      display: flex;
+      justify-content: center;
+      gap: 30px;
+      flex-wrap: wrap;
+      font-size: 10pt;
+      color: #444;
+    }
+    .cover-meta span { display: inline-flex; align-items: center; gap: 5px; }
+    .cover-meta strong { color: #1a1a1a; }
+
+    /* ---- Headings ---- */
+    h2 {
+      font-size: 15pt;
+      color: #1DB954;
+      border-bottom: 2px solid #1DB954;
+      padding-bottom: 4px;
+      margin: 30px 0 14px;
+      page-break-after: avoid;
+    }
+    h3 {
+      font-size: 12.5pt;
+      color: #222;
+      margin: 22px 0 10px;
+      page-break-after: avoid;
+    }
+    h4 {
+      font-size: 11pt;
+      color: #333;
+      margin: 12px 0 6px;
+    }
+
+    /* ---- Paragraphs & lists ---- */
+    p { margin: 6px 0; }
+    ul, ol { margin: 6px 0 6px 22px; }
+    li { margin-bottom: 3px; }
+
+    /* ---- Tables ---- */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 10px 0 16px;
+      font-size: 10pt;
+      page-break-inside: avoid;
+    }
+    th {
+      background: #1DB954;
+      color: #fff;
+      font-weight: 600;
+      padding: 7px 10px;
+      text-align: left;
+      white-space: nowrap;
+    }
+    th:first-child { border-radius: 4px 0 0 0; }
+    th:last-child  { border-radius: 0 4px 0 0; }
+    td {
+      padding: 6px 10px;
+      border-bottom: 1px solid #e0e0e0;
+      vertical-align: top;
+    }
+    tr:nth-child(even) td { background: #f8faf8; }
+    tr:last-child td { border-bottom: 2px solid #1DB954; }
+
+    /* centered columns */
+    .center-col { text-align: center; }
+
+    /* ---- Callout boxes ---- */
+    .callout {
+      background: #f0faf3;
+      border-left: 4px solid #1DB954;
+      padding: 10px 14px;
+      margin: 10px 0;
+      border-radius: 0 4px 4px 0;
+      font-size: 10.5pt;
+    }
+    .callout-warn {
+      background: #fff8e6;
+      border-left-color: #f0ad4e;
+    }
+    .callout strong { color: #15803d; }
+    .callout-warn strong { color: #b8860b; }
+
+    /* ---- Code / diagram block ---- */
+    .diagram {
+      background: #f5f5f5;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      padding: 14px 18px;
+      font-family: 'Cascadia Code', 'Consolas', 'Courier New', monospace;
+      font-size: 9pt;
+      line-height: 1.45;
+      white-space: pre;
+      overflow-x: auto;
+      margin: 10px 0 16px;
+      page-break-inside: avoid;
+    }
+
+    /* ---- Badges ---- */
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-size: 9pt;
+      font-weight: 600;
+      color: #fff;
+    }
+    .badge-high   { background: #dc3545; }
+    .badge-medium { background: #f0ad4e; color: #333; }
+    .badge-low    { background: #28a745; }
+
+    /* ---- Section numbers ---- */
+    .section-num {
+      display: inline-block;
+      background: #1DB954;
+      color: #fff;
+      width: 26px; height: 26px;
+      text-align: center;
+      line-height: 26px;
+      border-radius: 50%;
+      font-size: 12pt;
+      font-weight: 700;
+      margin-right: 6px;
+      vertical-align: middle;
+    }
+
+    /* ---- Week header ---- */
+    .week-header {
+      background: linear-gradient(135deg, #1DB954 0%, #15803d 100%);
+      color: #fff;
+      padding: 8px 16px;
+      border-radius: 6px;
+      margin: 24px 0 12px;
+      font-size: 12pt;
+      font-weight: 600;
+      page-break-after: avoid;
+    }
+
+    /* ---- Milestones ---- */
+    .milestone-num {
+      display: inline-block;
+      background: #1DB954;
+      color: #fff;
+      width: 22px; height: 22px;
+      text-align: center;
+      line-height: 22px;
+      border-radius: 50%;
+      font-size: 9.5pt;
+      font-weight: 700;
+    }
+
+    /* ---- Print ---- */
+    @media print {
+      body { padding: 0; }
+      .week-header { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      th { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .badge { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .section-num { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .milestone-num { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .callout, .callout-warn { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      tr:nth-child(even) td { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    }
+
+    /* ---- Footer ---- */
+    .footer {
+      margin-top: 40px;
+      padding-top: 12px;
+      border-top: 1px solid #ddd;
+      text-align: center;
+      font-size: 9pt;
+      color: #999;
+    }
+
+    /* page breaks for print */
+    .page-break { page-break-before: always; }
+  </style>
+</head>
+<body>
+
+<!-- ==================== COVER ==================== -->
+<div class="cover">
+  <h1>Planeaci&oacute;n del Proyecto</h1>
+  <div class="subtitle">PullRequest &mdash; Transferencia de playlists entre plataformas musicales</div>
+  <div class="cover-meta">
+    <span><strong>Equipo:</strong> 3 ingenieros de software junior</span>
+    <span><strong>Duraci&oacute;n:</strong> 9 semanas (44 d&iacute;as laborales)</span>
+  </div>
+</div>
+
+<!-- ==================== 1. OBJETIVOS ==================== -->
+<h2><span class="section-num">1</span> Objetivos del Proyecto</h2>
+<p>Desarrollar una aplicaci&oacute;n m&oacute;vil en Flutter que permita a los usuarios transferir playlists entre Spotify y YouTube Music, con las siguientes capacidades:</p>
+<ul>
+  <li>Autenticaci&oacute;n OAuth 2.0 contra ambas plataformas</li>
+  <li>Visualizaci&oacute;n y selecci&oacute;n de playlists del usuario</li>
+  <li>Transferencia de playlists con seguimiento en tiempo real (SSE)</li>
+  <li>Traducci&oacute;n de IDs de canciones entre plataformas</li>
+  <li>Backend dedicado con API REST desplegado en VPS</li>
+</ul>
+
+<!-- ==================== 2. ROLES ==================== -->
+<h2><span class="section-num">2</span> Asignaci&oacute;n de Roles</h2>
+<table>
+  <thead>
+    <tr>
+      <th class="center-col">Integrante</th>
+      <th>Rol</th>
+      <th>&Aacute;reas</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="center-col"><strong>Ingeniero 1</strong></td>
+      <td>Frontend / UX</td>
+      <td>Setup proyecto, dise&ntilde;o UX, pantallas, integraci&oacute;n SSE en UI, pantalla de resumen</td>
+    </tr>
+    <tr>
+      <td class="center-col"><strong>Ingeniero 2</strong></td>
+      <td>Backend</td>
+      <td>Dise&ntilde;o API, librer&iacute;a traducci&oacute;n IDs, endpoints, SSE servidor, retry logic</td>
+    </tr>
+    <tr>
+      <td class="center-col"><strong>Ingeniero 3</strong></td>
+      <td>Auth / Integraci&oacute;n / QA / DevOps</td>
+      <td>Registro OAuth, autenticaci&oacute;n Spotify y YTM, integraci&oacute;n backend, testing, deploy</td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- ==================== 3. SEMANA A SEMANA ==================== -->
+<h2><span class="section-num">3</span> Planeaci&oacute;n Semana a Semana</h2>
+
+<!-- ---- Semana 1 ---- -->
+<div class="week-header">Semana 1 &mdash; Setup del Proyecto + Dise&ntilde;o UX</div>
+<table>
+  <thead>
+    <tr><th class="center-col">D&iacute;a</th><th>Ing. 1 (Frontend/UX)</th><th>Ing. 2 (Backend)</th><th>Ing. 3 (Auth/QA/DevOps)</th></tr>
+  </thead>
+  <tbody>
+    <tr><td class="center-col"><strong>L</strong></td><td>Configurar entorno Flutter</td><td>&mdash;</td><td>&mdash;</td></tr>
+    <tr><td class="center-col"><strong>Ma</strong></td><td>&mdash;</td><td>&mdash;</td><td>Registro apps OAuth (Spotify + YTM)</td></tr>
+    <tr><td class="center-col"><strong>Mi</strong></td><td>Setup repositorio (Git, CI)</td><td>&mdash;</td><td>&mdash;</td></tr>
+    <tr><td class="center-col"><strong>J</strong></td><td>&mdash;</td><td>&mdash;</td><td>&mdash;</td></tr>
+    <tr><td class="center-col"><strong>V</strong></td><td>&mdash;</td><td>&mdash;</td><td>&mdash;</td></tr>
+  </tbody>
+</table>
+<div class="callout">
+  <strong>Tarea paralela toda la semana (Ing. 1):</strong> Dise&ntilde;o UX completo de las 7 pantallas (wireframes, flujo de navegaci&oacute;n, paleta de colores, componentes reutilizables).
+</div>
+<h4>Entregables:</h4>
+<ul>
+  <li>Entorno de desarrollo Flutter funcional</li>
+  <li>Repositorio configurado con estructura base</li>
+  <li>Aplicaciones OAuth registradas en Spotify Developer y Google Cloud Console</li>
+  <li>Dise&ntilde;o UX completo (mockups/wireframes de todas las pantallas)</li>
+</ul>
+<div class="callout callout-warn">
+  <strong>Dependencia:</strong> El dise&ntilde;o UX debe completarse antes de iniciar la implementaci&oacute;n de pantallas en Semana 2.
+</div>
+
+<!-- ---- Semana 2 ---- -->
+<div class="week-header">Semana 2 &mdash; Implementaci&oacute;n de Pantallas (UI)</div>
+<table>
+  <thead>
+    <tr><th class="center-col">D&iacute;a</th><th>Ing. 1 (Frontend/UX)</th><th>Ing. 2 (Backend)</th><th>Ing. 3 (Auth/QA/DevOps)</th></tr>
+  </thead>
+  <tbody>
+    <tr><td class="center-col"><strong>L</strong></td><td>Home Screen</td><td>&mdash;</td><td>&mdash;</td></tr>
+    <tr><td class="center-col"><strong>Ma</strong></td><td>Playlist Selection Screen</td><td>&mdash;</td><td>&mdash;</td></tr>
+    <tr><td class="center-col"><strong>Mi</strong></td><td>Playlist Details Screen</td><td>&mdash;</td><td>&mdash;</td></tr>
+    <tr><td class="center-col"><strong>J</strong></td><td>Playlist Transfer Screen</td><td>&mdash;</td><td>&mdash;</td></tr>
+    <tr><td class="center-col"><strong>V</strong></td><td>Transfer History Screen</td><td>&mdash;</td><td>&mdash;</td></tr>
+  </tbody>
+</table>
+<h4>Entregables:</h4>
+<ul>
+  <li>5 pantallas implementadas con datos mock</li>
+  <li>Navegaci&oacute;n funcional con GoRouter</li>
+  <li>Widgets reutilizables extra&iacute;dos (cards, listas, botones)</li>
+</ul>
+<div class="callout callout-warn">
+  <strong>Dependencia:</strong> Requiere UX Design terminado (Semana 1). Pantallas usan datos mock hasta integraci&oacute;n en Semana 7.
+</div>
+<div class="callout">
+  <strong>Nota:</strong> Ingeniero 2 e Ingeniero 3 no tienen tareas asignadas esta semana seg&uacute;n el Gantt. Pueden adelantar investigaci&oacute;n de APIs o documentaci&oacute;n.
+</div>
+
+<!-- ---- Semana 3 ---- -->
+<div class="page-break"></div>
+<div class="week-header">Semana 3 &mdash; Autenticaci&oacute;n Spotify + Dise&ntilde;o API Backend</div>
+<table>
+  <thead>
+    <tr><th class="center-col">D&iacute;a</th><th>Ing. 1 (Frontend/UX)</th><th>Ing. 2 (Backend)</th><th>Ing. 3 (Auth/QA/DevOps)</th></tr>
+  </thead>
+  <tbody>
+    <tr><td class="center-col"><strong>L&ndash;V</strong></td><td>&mdash;</td><td>Dise&ntilde;o de API Endpoints</td><td>Autenticaci&oacute;n Spotify (OAuth 2.0 PKCE)</td></tr>
+  </tbody>
+</table>
+
+<h4>Ing. 2 &mdash; Dise&ntilde;o de API (toda la semana):</h4>
+<ul>
+  <li>Definir esquema de endpoints REST (OpenAPI/Swagger)</li>
+  <li>Dise&ntilde;ar modelos de datos (auth tokens, playlists, tracks, transfers)</li>
+  <li>Definir contratos de request/response para cada endpoint</li>
+  <li>Dise&ntilde;ar protocolo SSE para seguimiento de transferencia</li>
+  <li>Seleccionar stack backend (lenguaje, framework, BD)</li>
+</ul>
+
+<h4>Ing. 3 &mdash; Spotify Authentication (toda la semana):</h4>
+<ul>
+  <li>Implementar flujo OAuth 2.0 PKCE con Spotify</li>
+  <li>Integrar <code>flutter_web_auth_2</code> para el flujo en-app</li>
+  <li>Manejo de tokens (access, refresh)</li>
+  <li>Persistencia segura con <code>flutter_secure_storage</code></li>
+  <li>Implementar <code>SpotifyAuthService</code> conforme a <code>AuthRepository</code></li>
+</ul>
+
+<h4>Entregables:</h4>
+<ul>
+  <li>Documento de dise&ntilde;o de API con todos los endpoints especificados</li>
+  <li>Autenticaci&oacute;n Spotify funcional en la app (login/logout/refresh)</li>
+</ul>
+<div class="callout callout-warn">
+  <strong>Dependencia:</strong> El dise&ntilde;o de API es prerequisito para todas las tareas de backend de Semanas 4&ndash;7.
+</div>
+
+<!-- ---- Semana 4 ---- -->
+<div class="week-header">Semana 4 &mdash; Autenticaci&oacute;n YTM + Librer&iacute;a de Traducci&oacute;n de IDs</div>
+<table>
+  <thead>
+    <tr><th class="center-col">D&iacute;a</th><th>Ing. 1 (Frontend/UX)</th><th>Ing. 2 (Backend)</th><th>Ing. 3 (Auth/QA/DevOps)</th></tr>
+  </thead>
+  <tbody>
+    <tr><td class="center-col"><strong>L&ndash;V</strong></td><td>&mdash;</td><td>Librer&iacute;a traducci&oacute;n IDs YTM &harr; Spotify</td><td>Autenticaci&oacute;n YouTube Music (OAuth 2.0)</td></tr>
+  </tbody>
+</table>
+
+<h4>Ing. 2 &mdash; Librer&iacute;a de Traducci&oacute;n de IDs (toda la semana):</h4>
+<ul>
+  <li>Investigar APIs de b&uacute;squeda de ambas plataformas</li>
+  <li>Implementar algoritmo de matching (t&iacute;tulo + artista + duraci&oacute;n)</li>
+  <li>Manejar casos edge: covers, remixes, versiones live</li>
+  <li>Implementar fuzzy matching como fallback</li>
+  <li>Tests unitarios del algoritmo de traducci&oacute;n</li>
+</ul>
+
+<h4>Ing. 3 &mdash; YTM Authentication (toda la semana):</h4>
+<ul>
+  <li>Implementar flujo OAuth 2.0 con YouTube/Google</li>
+  <li>Integrar <code>flutter_web_auth_2</code> con scopes de YouTube Music</li>
+  <li>Manejo de tokens (access, refresh) para Google APIs</li>
+  <li>Implementar <code>YtMusicAuthService</code> conforme a <code>AuthRepository</code></li>
+</ul>
+
+<h4>Entregables:</h4>
+<ul>
+  <li>Librer&iacute;a de traducci&oacute;n de IDs funcional con tests</li>
+  <li>Autenticaci&oacute;n YouTube Music funcional en la app</li>
+</ul>
+<div class="callout callout-warn">
+  <strong>Dependencia:</strong> La librer&iacute;a de traducci&oacute;n es componente cr&iacute;tico para el endpoint de transferencia (Semana 6).
+</div>
+
+<!-- ---- Semana 5 ---- -->
+<div class="week-header">Semana 5 &mdash; Endpoints de Auth y Playlists</div>
+<table>
+  <thead>
+    <tr><th class="center-col">D&iacute;a</th><th>Ing. 1 (Frontend/UX)</th><th>Ing. 2 (Backend)</th><th>Ing. 3 (Auth/QA/DevOps)</th></tr>
+  </thead>
+  <tbody>
+    <tr><td class="center-col"><strong>L</strong></td><td>&mdash;</td><td>Endpoint auth tokens</td><td>&mdash;</td></tr>
+    <tr><td class="center-col"><strong>Ma</strong></td><td>&mdash;</td><td>Endpoint auth tokens</td><td>&mdash;</td></tr>
+    <tr><td class="center-col"><strong>Mi</strong></td><td>&mdash;</td><td>Endpoint auth tokens</td><td>&mdash;</td></tr>
+    <tr><td class="center-col"><strong>J</strong></td><td>&mdash;</td><td>Endpoint list playlists</td><td>&mdash;</td></tr>
+    <tr><td class="center-col"><strong>V</strong></td><td>&mdash;</td><td>Endpoint list playlists</td><td>&mdash;</td></tr>
+  </tbody>
+</table>
+
+<h4>Ing. 2 &mdash; Endpoint Auth Tokens (L&ndash;Mi):</h4>
+<ul>
+  <li>Endpoint para recibir y almacenar tokens OAuth del cliente</li>
+  <li>Validaci&oacute;n de tokens</li>
+  <li>Almacenamiento seguro en base de datos</li>
+  <li>Endpoint de refresh de tokens</li>
+</ul>
+
+<h4>Ing. 2 &mdash; Endpoint List Playlists (J&ndash;V, contin&uacute;a S6):</h4>
+<ul>
+  <li>Endpoint para listar playlists del usuario</li>
+  <li>Integraci&oacute;n con Spotify API y YouTube Data API</li>
+  <li>Paginaci&oacute;n y cach&eacute; de resultados</li>
+  <li>Normalizaci&oacute;n de datos entre plataformas</li>
+</ul>
+
+<h4>Entregables:</h4>
+<ul>
+  <li>Endpoint <code>/auth/tokens</code> funcional</li>
+  <li>Endpoint <code>/playlists</code> en progreso (se completa en Semana 6)</li>
+</ul>
+<div class="callout callout-warn">
+  <strong>Dependencia:</strong> Requiere dise&ntilde;o de API (Semana 3). Los endpoints de auth son prerequisito para endpoints de playlists y transfer.
+</div>
+
+<!-- ---- Semana 6 ---- -->
+<div class="page-break"></div>
+<div class="week-header">Semana 6 &mdash; Endpoint de Playlists (fin) + Endpoint de Transferencia</div>
+<table>
+  <thead>
+    <tr><th class="center-col">D&iacute;a</th><th>Ing. 1 (Frontend/UX)</th><th>Ing. 2 (Backend)</th><th>Ing. 3 (Auth/QA/DevOps)</th></tr>
+  </thead>
+  <tbody>
+    <tr><td class="center-col"><strong>L</strong></td><td>&mdash;</td><td>Endpoint list playlists (fin)</td><td>&mdash;</td></tr>
+    <tr><td class="center-col"><strong>Ma</strong></td><td>&mdash;</td><td>Endpoint transfer playlist</td><td>&mdash;</td></tr>
+    <tr><td class="center-col"><strong>Mi</strong></td><td>&mdash;</td><td>Endpoint transfer playlist</td><td>&mdash;</td></tr>
+    <tr><td class="center-col"><strong>J</strong></td><td>&mdash;</td><td>Endpoint transfer playlist</td><td>&mdash;</td></tr>
+    <tr><td class="center-col"><strong>V</strong></td><td>&mdash;</td><td>Endpoint transfer playlist</td><td>&mdash;</td></tr>
+  </tbody>
+</table>
+
+<h4>Ing. 2 &mdash; Endpoint Transfer Playlist (Ma&ndash;V):</h4>
+<ul>
+  <li>Endpoint para iniciar transferencia de playlist</li>
+  <li>Orquestaci&oacute;n: obtener tracks &rarr; traducir IDs &rarr; crear playlist destino &rarr; agregar tracks</li>
+  <li>Manejo de errores parciales (tracks no encontrados)</li>
+  <li>Registro de resultados por track (&eacute;xito/fallo/no encontrado)</li>
+</ul>
+
+<h4>Entregables:</h4>
+<ul>
+  <li>Endpoint <code>/playlists</code> completado</li>
+  <li>Endpoint <code>/transfer</code> funcional (sin SSE a&uacute;n)</li>
+</ul>
+<div class="callout callout-warn">
+  <strong>Dependencia:</strong> Requiere librer&iacute;a de traducci&oacute;n de IDs (Semana 4) y endpoint de auth (Semana 5).
+</div>
+
+<!-- ---- Semana 7 ---- -->
+<div class="week-header">Semana 7 &mdash; SSE + Integraci&oacute;n Backend + Retry Logic + QA Inicio</div>
+<table>
+  <thead>
+    <tr><th class="center-col">D&iacute;a</th><th>Ing. 1 (Frontend/UX)</th><th>Ing. 2 (Backend)</th><th>Ing. 3 (Auth/QA/DevOps)</th></tr>
+  </thead>
+  <tbody>
+    <tr><td class="center-col"><strong>L</strong></td><td>Backend Integration</td><td>Transfer status SSE</td><td>&mdash;</td></tr>
+    <tr><td class="center-col"><strong>Ma</strong></td><td>Backend Integration</td><td>Transfer status SSE</td><td>&mdash;</td></tr>
+    <tr><td class="center-col"><strong>Mi</strong></td><td>Backend Integration</td><td>Transfer status SSE</td><td>&mdash;</td></tr>
+    <tr><td class="center-col"><strong>J</strong></td><td>&mdash;</td><td>Transfer status SSE</td><td>Song translation Unit Testing</td></tr>
+    <tr><td class="center-col"><strong>V</strong></td><td>SSE UX Integration</td><td>Backoff / Retry Logic</td><td>Song translation Unit Testing</td></tr>
+  </tbody>
+</table>
+
+<h4>Ing. 1 &mdash; Backend Integration (L&ndash;Mi):</h4>
+<ul>
+  <li>Conectar pantallas con API REST real (reemplazar mocks)</li>
+  <li>Implementar <code>SpotifyPlaylistService</code> / <code>YtMusicPlaylistService</code> con llamadas HTTP reales</li>
+  <li>Implementar <code>RealTransferService</code> conforme a <code>TransferRepository</code></li>
+  <li>Pruebas de flujo completo con backend</li>
+</ul>
+
+<h4>Ing. 1 &mdash; SSE UX Integration (V, contin&uacute;a S8):</h4>
+<ul>
+  <li>Integrar EventSource en Flutter para recibir eventos SSE</li>
+  <li>Actualizar UI de transferencia con progreso en tiempo real</li>
+  <li>Manejar reconexi&oacute;n y estados de error</li>
+</ul>
+
+<h4>Ing. 2 &mdash; Transfer Status SSE (L&ndash;J):</h4>
+<ul>
+  <li>Implementar Server-Sent Events para progreso de transferencia</li>
+  <li>Emitir eventos por cada track procesado (% completado, track actual, errores)</li>
+  <li>Manejar conexiones m&uacute;ltiples y cleanup</li>
+</ul>
+
+<h4>Ing. 2 &mdash; Exponential Backoff / Retry Logic (V):</h4>
+<ul>
+  <li>Implementar retry con backoff exponencial para llamadas a APIs externas</li>
+  <li>Configurar l&iacute;mites de reintentos y timeouts</li>
+  <li>Manejar rate limiting de Spotify y YouTube APIs</li>
+</ul>
+
+<h4>Ing. 3 &mdash; Song Translation Unit Testing (J&ndash;V, contin&uacute;a S8):</h4>
+<ul>
+  <li>Tests unitarios de la librer&iacute;a de traducci&oacute;n de IDs</li>
+  <li>Casos: match exacto, fuzzy match, no match, duplicados</li>
+  <li>Tests de rendimiento con datasets grandes</li>
+</ul>
+
+<h4>Entregables:</h4>
+<ul>
+  <li>App conectada al backend real</li>
+  <li>SSE funcionando extremo a extremo</li>
+  <li>Retry logic implementado</li>
+  <li>Tests de traducci&oacute;n en progreso</li>
+</ul>
+<div class="callout callout-warn">
+  <strong>Dependencia:</strong> Semana cr&iacute;tica &mdash; requiere que endpoints de backend (Semanas 5&ndash;6) est&eacute;n completos. La integraci&oacute;n SSE en UI requiere SSE del servidor funcional.
+</div>
+
+<!-- ---- Semana 8 ---- -->
+<div class="page-break"></div>
+<div class="week-header">Semana 8 &mdash; SSE UX (fin) + Transfer Summary + Testing + Deploy Inicio</div>
+<table>
+  <thead>
+    <tr><th class="center-col">D&iacute;a</th><th>Ing. 1 (Frontend/UX)</th><th>Ing. 2 (Backend)</th><th>Ing. 3 (Auth/QA/DevOps)</th></tr>
+  </thead>
+  <tbody>
+    <tr><td class="center-col"><strong>L</strong></td><td>SSE UX Integration (fin)</td><td>&mdash;</td><td>Song translation Unit Testing (fin)</td></tr>
+    <tr><td class="center-col"><strong>Ma</strong></td><td>Transfer Summary Screen</td><td>&mdash;</td><td>API Endpoint Unit Testing</td></tr>
+    <tr><td class="center-col"><strong>Mi</strong></td><td>Transfer Summary Screen</td><td>&mdash;</td><td>API Endpoint Unit Testing</td></tr>
+    <tr><td class="center-col"><strong>J</strong></td><td>Transfer Summary Screen</td><td>&mdash;</td><td>API Endpoint Unit Testing</td></tr>
+    <tr><td class="center-col"><strong>V</strong></td><td>&mdash;</td><td>&mdash;</td><td>Move backend to VPS</td></tr>
+  </tbody>
+</table>
+
+<h4>Ing. 1 &mdash; Transfer Summary Screen (Ma&ndash;J):</h4>
+<ul>
+  <li>Pantalla de resumen post-transferencia</li>
+  <li>Mostrar: tracks transferidos, fallidos, no encontrados</li>
+  <li>Opci&oacute;n de reintentar tracks fallidos</li>
+  <li>Historial de transferencias</li>
+</ul>
+
+<h4>Ing. 3 &mdash; API Endpoint Unit Testing (Ma&ndash;J):</h4>
+<ul>
+  <li>Tests unitarios de todos los endpoints del backend</li>
+  <li>Tests de validaci&oacute;n de inputs</li>
+  <li>Tests de manejo de errores</li>
+  <li>Tests de integraci&oacute;n con APIs externas (mocked)</li>
+</ul>
+
+<h4>Ing. 3 &mdash; Deploy VPS Inicio (V):</h4>
+<ul>
+  <li>Provisionar VPS (DigitalOcean/Hetzner/Linode)</li>
+  <li>Configurar sistema operativo y dependencias</li>
+  <li>Configurar firewall y seguridad b&aacute;sica</li>
+</ul>
+
+<h4>Entregables:</h4>
+<ul>
+  <li>Integraci&oacute;n SSE en UI completada</li>
+  <li>Pantalla Transfer Summary funcional</li>
+  <li>Tests unitarios de traducci&oacute;n completados</li>
+  <li>Tests de API completados</li>
+  <li>VPS provisionado y configurado</li>
+</ul>
+
+<!-- ---- Semana 9 ---- -->
+<div class="week-header">Semana 9 &mdash; Deployment + Testing End-to-End</div>
+<table>
+  <thead>
+    <tr><th class="center-col">D&iacute;a</th><th>Ing. 1 (Frontend/UX)</th><th>Ing. 2 (Backend)</th><th>Ing. 3 (Auth/QA/DevOps)</th></tr>
+  </thead>
+  <tbody>
+    <tr><td class="center-col"><strong>L</strong></td><td>&mdash;</td><td>&mdash;</td><td>Deploy backend en VPS</td></tr>
+    <tr><td class="center-col"><strong>Ma</strong></td><td>&mdash;</td><td>&mdash;</td><td>Deploy backend en VPS</td></tr>
+    <tr><td class="center-col"><strong>Mi</strong></td><td>&mdash;</td><td>&mdash;</td><td>Deploy backend en VPS</td></tr>
+    <tr><td class="center-col"><strong>J</strong></td><td>&mdash;</td><td>&mdash;</td><td>E2E manual testing (500+ songs)</td></tr>
+    <tr><td class="center-col"><strong>V</strong></td><td>&mdash;</td><td>&mdash;</td><td>&mdash; (buffer)</td></tr>
+  </tbody>
+</table>
+
+<h4>Ing. 3 &mdash; Deploy Backend en VPS (L&ndash;Mi):</h4>
+<ul>
+  <li>Desplegar aplicaci&oacute;n backend en VPS</li>
+  <li>Configurar dominio/DNS o IP est&aacute;tica</li>
+  <li>Configurar SSL/TLS (Let&rsquo;s Encrypt)</li>
+  <li>Configurar proceso de startup (systemd / Docker)</li>
+  <li>Monitoreo y logging b&aacute;sico</li>
+  <li>Validar conectividad desde la app</li>
+</ul>
+
+<h4>Ing. 3 &mdash; End-to-End Manual Testing (J):</h4>
+<ul>
+  <li>Test completo de flujo: login &rarr; seleccionar playlist &rarr; transferir &rarr; verificar resultado</li>
+  <li>Test con playlist de 500+ canciones</li>
+  <li>Verificar precisi&oacute;n de traducci&oacute;n de IDs</li>
+  <li>Verificar manejo de errores y reconexi&oacute;n SSE</li>
+  <li>Documentar bugs encontrados</li>
+</ul>
+
+<h4>Entregables finales:</h4>
+<ul>
+  <li>Backend desplegado y accesible desde la app</li>
+  <li>Prueba E2E exitosa con 500+ canciones</li>
+  <li>Proyecto listo para entrega</li>
+</ul>
+
+<!-- ==================== 4. DIAGRAMA ==================== -->
+<div class="page-break"></div>
+<h2><span class="section-num">4</span> Diagrama de Dependencias</h2>
+<div class="diagram">Semana 1                    Semana 2              Semana 3
+&#9484;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9488;    &#9484;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9488;    &#9484;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9488;
+&#9474; Setup Proyecto   &#9474;&#9472;&#9472;&#9472;&#9654;&#9474; Pantallas (UI)   &#9474;    &#9474; Spotify Auth          &#9474;
+&#9474; UX Design        &#9474;    &#9474; (5 screens)      &#9474;    &#9474; API Endpoint Design   &#9474;
+&#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496;    &#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496;    &#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9516;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496;
+                                                           &#9474;
+Semana 4                    Semana 5                  Semana 6
+&#9484;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9488;    &#9484;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9488;    &#9484;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9488;
+&#9474; YTM Auth         &#9474;    &#9474; Endpoint Auth    &#9474;&#9472;&#9472;&#9472;&#9654;&#9474; Endpoint Playlists    &#9474;
+&#9474; Lib Traducci&oacute;n   &#9474;&#9472;&#9472;&#9488; &#9474; Endpoint Lists   &#9474;    &#9474; Endpoint Transfer     &#9474;
+&#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496;  &#9474; &#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496;    &#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9516;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496;
+                     &#9474;                                      &#9474;
+                     &#9474;  Semana 7                        Semana 8
+                     &#9474; &#9484;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9488;    &#9484;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9488;
+                     &#9492;&#9654;&#9474; Backend Integr.  &#9474;&#9472;&#9472;&#9472;&#9654;&#9474; Transfer Summary      &#9474;
+                       &#9474; SSE (server+UI)  &#9474;    &#9474; Unit Testing APIs     &#9474;
+                       &#9474; Retry Logic      &#9474;    &#9474; Deploy VPS (inicio)   &#9474;
+                       &#9474; Unit Test Trad.  &#9474;    &#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9516;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496;
+                       &#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496;                &#9474;
+                                                      Semana 9
+                                               &#9484;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9488;
+                                               &#9474; Deploy VPS (fin)      &#9474;
+                                               &#9474; E2E Testing 500+ songs&#9474;
+                                               &#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496;</div>
+
+<!-- ==================== 5. HITOS ==================== -->
+<h2><span class="section-num">5</span> Hitos (Milestones)</h2>
+<table>
+  <thead>
+    <tr><th class="center-col">Semana</th><th>Hito</th><th>Criterio de Aceptaci&oacute;n</th></tr>
+  </thead>
+  <tbody>
+    <tr><td class="center-col"><span class="milestone-num">1</span></td><td>Proyecto configurado</td><td>Entorno Flutter, repo, OAuth apps registradas, UX dise&ntilde;ado</td></tr>
+    <tr><td class="center-col"><span class="milestone-num">2</span></td><td>UI completa (mock)</td><td>5 pantallas navegables con datos ficticios</td></tr>
+    <tr><td class="center-col"><span class="milestone-num">3</span></td><td>Auth Spotify + API dise&ntilde;ada</td><td>Login Spotify funcional, documento de API aprobado</td></tr>
+    <tr><td class="center-col"><span class="milestone-num">4</span></td><td>Auth YTM + Lib traducci&oacute;n</td><td>Login YTM funcional, traducci&oacute;n de IDs con tests</td></tr>
+    <tr><td class="center-col"><span class="milestone-num">5</span></td><td>Backend core funcional</td><td>Endpoints de auth y playlists operativos</td></tr>
+    <tr><td class="center-col"><span class="milestone-num">6</span></td><td>Transferencia funcional</td><td>Endpoint de transferencia probado end-to-end</td></tr>
+    <tr><td class="center-col"><span class="milestone-num">7</span></td><td>Integraci&oacute;n completa</td><td>App conectada a backend real, SSE funcionando, retry logic</td></tr>
+    <tr><td class="center-col"><span class="milestone-num">8</span></td><td>Testing + Deploy inicio</td><td>Tests unitarios completos, Transfer Summary, VPS provisionado</td></tr>
+    <tr><td class="center-col"><span class="milestone-num">9</span></td><td><strong>Entrega final</strong></td><td>Backend desplegado, E2E 500+ canciones exitoso</td></tr>
+  </tbody>
+</table>
+
+<!-- ==================== 6. CRITERIOS DE EXITO ==================== -->
+<h2><span class="section-num">6</span> Criterios de &Eacute;xito</h2>
+<ol>
+  <li>La app permite login con Spotify y YouTube Music</li>
+  <li>El usuario puede ver sus playlists de ambas plataformas</li>
+  <li>La transferencia de una playlist de 500+ canciones se completa con &gt;90% de precisi&oacute;n</li>
+  <li>El progreso de transferencia se muestra en tiempo real (SSE)</li>
+  <li>El backend est&aacute; desplegado en un VPS dedicado y accesible</li>
+  <li>Todos los tests unitarios pasan (traducci&oacute;n de IDs + endpoints API)</li>
+  <li>El proyecto se entrega dentro de las 9 semanas planificadas</li>
+</ol>
+
+</body>
+</html>

@@ -1,6 +1,6 @@
 import { SpotifyApi } from "@spotify/web-api-ts-sdk";
 import { getOauthTokens, saveAccessTokens } from './database';
-import { AuthData, SpotifyPlaylistItemsSchema, PlaylistItems } from "@lib/custom_types";
+import { AuthData, SpotifyPlaylistItemsSchema, PlaylistItems, PlaylistItem, Playlist } from "@lib/custom_types";
 
 async function refreshAuthToken(refreshToken: string): Promise<AuthData> {
   const clientId = process.env.SPOTIFY_CLIENT_ID;
@@ -147,4 +147,26 @@ export async function getPlaylistItems(
     })),
     next: (offset + limit < filteredData.total)
   };
+}
+
+export async function getAllPlaylistItems(deviceId: string, playlistId: string):
+  Promise<PlaylistItem[] | null> {
+  const spotify = await createSpotifyClient(deviceId);
+  if (!spotify) return null;
+  let offset = 0;
+  const contents: PlaylistItem[] = [];
+
+  while (true) {
+    const response = await getPlaylistItems(playlistId, deviceId, 100, offset);
+
+    if (!response) break;
+
+    contents.push(...response.items);
+
+    if (response.next) {
+      offset += 100;
+    } else break;
+  }
+
+  return contents;
 }

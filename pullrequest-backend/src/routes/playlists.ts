@@ -1,7 +1,7 @@
 import { Elysia, t } from 'elysia';
 import { youtube_v3 } from 'googleapis';
-import { createYouTubeClient } from '@services/youtube_api_client';
-import { createSpotifyClient, getPlaylistItems } from '@services/spotify_api_client';
+import { createYouTubeClient, getAllPlaylistItems as getAllYoutubePlaylistItems } from '@services/youtube_api_client';
+import { createSpotifyClient, getAllPlaylistItems as getAllSpotifyPlaylistImtes } from '@services/spotify_api_client';
 import { SimplifiedPlaylist } from '@spotify/web-api-ts-sdk'
 import { Playlist, PlaylistItem } from '@lib/custom_types';
 
@@ -104,67 +104,23 @@ export const playlistsRoutes = new Elysia({ prefix: 'playlists' })
     }
 
     if (platform === 'ytm') {
-      const youtube = createYouTubeClient(deviceId);
-      if (!youtube) return status(401, 'User not authenticated with Google');
+      const playlistItems = await getAllYoutubePlaylistItems(
+        deviceId,
+        playlist_id
+      );
+      if (!playlistItems)
+        return status(401, 'User not authenticated with Google');
 
-      const contents: youtube_v3.Schema$PlaylistItem[] = [];
-      let paginationToken: string | undefined = undefined;
-
-      while (true) {
-        const response: any = await youtube.playlistItems.list({
-          part: ['snippet'],
-          playlistId: playlist_id,
-          maxResults: 50,
-          pageToken: paginationToken
-        });
-
-        if (response.data.items) {
-          contents.push(...response.data.items);
-        }
-
-        paginationToken = response.data.nextPageToken ?? undefined;
-        if (!paginationToken) break;
-      }
-
-      const filteredContents: PlaylistItem[] = contents.map(item => ({
-        platform: 'ytm',
-        id: item.snippet?.resourceId?.videoId || '',
-        title: item.snippet?.title || '',
-        artist: item.snippet?.videoOwnerChannelTitle ?
-          item.snippet?.videoOwnerChannelTitle.replace(/\s-\sTopic\s*$/, "")
-          : "??",
-        thumbnail: (item.snippet?.thumbnails?.high?.url &&
-          item.snippet?.thumbnails?.high?.width &&
-          item.snippet?.thumbnails?.high?.height) ? {
-          url: item.snippet.thumbnails.high.url,
-          width: item.snippet.thumbnails.high.width,
-          height: item.snippet.thumbnails.high.height
-        } :
-          { url: '', height: 0, width: 0 }
-      }));
-
-      return filteredContents;
+      return playlistItems;
     } else {
+      const playlistItems = await getAllSpotifyPlaylistImtes(
+        deviceId,
+        playlist_id
+      );
+      if (!playlistItems)
+        return status(401, 'User not authenticated with Spotify');
 
-      const spotify = await createSpotifyClient(deviceId);
-      if (!spotify) return status(401, 'User not authenticated with Spotify');
-
-      let offset = 0;
-      const contents: PlaylistItem[] = [];
-
-      while (true) {
-        const response = await getPlaylistItems(playlist_id, deviceId, 100, offset);
-
-        if (!response) break;
-
-        contents.push(...response.items);
-
-        if (response.next) {
-          offset += 100;
-        } else break;
-      }
-
-      return contents;
+      return playlistItems;
     }
 
   }, {

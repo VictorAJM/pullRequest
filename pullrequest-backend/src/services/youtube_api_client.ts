@@ -1,7 +1,7 @@
 import { google, youtube_v3 } from 'googleapis';
 import { OAuth2Client } from 'google-auth-library';
 import { getOauthTokens, saveAccessTokens } from './database';
-import { AuthData } from '@lib/custom_types';
+import { AuthData, PlaylistItem } from '@lib/custom_types';
 
 const oauthClient = new OAuth2Client(
   process.env.GOOGLE_CLIENT_ID,
@@ -63,4 +63,49 @@ export async function getAccessTokenFromCode(code: string): Promise<AuthData | n
   } catch (error) {
     return null;
   }
+}
+
+export async function getAllPlaylistItems(deviceId: string, playlistId: string):
+  Promise<PlaylistItem[] | null> {
+  const youtube = createYouTubeClient(deviceId);
+  if (!youtube) return null;
+
+  const contents: youtube_v3.Schema$PlaylistItem[] = [];
+  let paginationToken: string | undefined = undefined;
+
+  while (true) {
+    const response: any = await youtube.playlistItems.list({
+      part: ['snippet'],
+      playlistId: playlistId,
+      maxResults: 50,
+      pageToken: paginationToken
+    });
+
+    if (response.data.items) {
+      contents.push(...response.data.items);
+    }
+
+    paginationToken = response.data.nextPageToken ?? undefined;
+    if (!paginationToken) break;
+  }
+
+  const filteredContents: PlaylistItem[] = contents.map(item => ({
+    platform: 'ytm',
+    id: item.snippet?.resourceId?.videoId || '',
+    title: item.snippet?.title || '',
+    artist: item.snippet?.videoOwnerChannelTitle ?
+      item.snippet?.videoOwnerChannelTitle.replace(/\s-\sTopic\s*$/, "")
+      : "??",
+    thumbnail: (item.snippet?.thumbnails?.high?.url &&
+      item.snippet?.thumbnails?.high?.width &&
+      item.snippet?.thumbnails?.high?.height) ? {
+      url: item.snippet.thumbnails.high.url,
+      width: item.snippet.thumbnails.high.width,
+      height: item.snippet.thumbnails.high.height
+    } :
+      { url: '', height: 0, width: 0 }
+  }));
+
+  return filteredContents;
+
 }

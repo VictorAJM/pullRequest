@@ -48,19 +48,23 @@ ctx.onmessage = async (event: MessageEvent) => {
         playlistId
       );
 
-      console.log('transfering this shit...');
+      let currentItem = 0;
+
       for (const batch of chunkGenerator(playlistItems, 100)) {
         const spotifyTracks: string[] = [];
         for (const track of batch) {
-          ctx.postMessage({ status: 'in_progress', current_song: track.title });
+          ctx.postMessage({
+            status: 'in_progress',
+            current_song: track.title,
+            totalItems: playlistItems.length,
+            currentItem
+          });
           const translated = await translateTrack(track, 'spotify');
 
           if (translated.id !== 'Not Found :(')
             spotifyTracks.push(`spotify:track:${translated.id}`);
+          currentItem++;
         }
-
-        console.log('adding this shit to playlist...');
-        console.log(spotifyTracks);
 
         const response = await addItemsToPlaylist(
           deviceId,
@@ -68,7 +72,7 @@ ctx.onmessage = async (event: MessageEvent) => {
           spotifyTracks
         );
 
-        if (response.status != 200) {
+        if (response.status != 201) {
           console.log("Fuckk??: ", await response)
         }
       }
@@ -91,13 +95,20 @@ ctx.onmessage = async (event: MessageEvent) => {
         playlistId
       );
 
+      var currentItem = 0;
+
       for (const track of playlistItems) {
-        ctx.postMessage({ status: 'in_progress', current_song: track.title });
+        ctx.postMessage({
+          status: 'in_progress',
+          current_song: track.title,
+          totalItems: playlistItems.length,
+          currentItem
+        });
         const translated = await translateTrack(track, 'ytm');
 
         if (translated.id === "Not Found :(") {
-          console.log("What the fuckyyy ;(.\nThis fucking shit was not found");
-          break;
+          console.log('Track not found :(');
+          continue;
         }
 
         const response = await youtubeClient.playlistItems.insert({
@@ -113,9 +124,10 @@ ctx.onmessage = async (event: MessageEvent) => {
           }
         });
 
-        await Bun.sleep(500);
+        currentItem++;
+        await Bun.sleep(250);
       }
-      ctx.postMessage({ status: 'completed' });
+      ctx.postMessage({ status: 'completed', totalItems: playlistItems.length });
     } catch (error) {
       console.log("Oh fuckyy: ", error);
       ctx.postMessage({ status: "error" });

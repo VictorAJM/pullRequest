@@ -38,6 +38,22 @@ async function refreshAuthToken(refreshToken: string): Promise<AuthData> {
   };
 }
 
+async function getAccessToken(deviceId: string): Promise<AuthData> {
+  const tokens = getOauthTokens(deviceId, 'spotify');
+  if (!tokens)
+    throw new Error("Failed to authenticate with Spotify API");
+
+  if (tokens.expires_at - Date.now() < 90) {
+    return await refreshAuthToken(tokens.refresh_token);
+  }
+
+  return {
+    accessToken: tokens.oauth_token,
+    refreshToken: tokens.refresh_token,
+    expiresAt: tokens.expires_at
+  };
+}
+
 export async function createSpotifyClient(deviceId: string):
   Promise<SpotifyApi | null> {
   const result = getOauthTokens(deviceId, 'spotify');
@@ -107,8 +123,6 @@ export async function getPlaylistItems(
   limit: number,
   offset: number
 ): Promise<PlaylistItems | null> {
-  const tokens = getOauthTokens(deviceId, 'spotify');
-
   const result = getOauthTokens(deviceId, 'spotify');
   if (!result) return null;
 
@@ -147,6 +161,58 @@ export async function getPlaylistItems(
     })),
     next: (offset + limit < filteredData.total)
   };
+}
+
+export async function createNewPlaylist(
+  deviceId: string,
+  title: string,
+  description: string) {
+  const tokens = await getAccessToken(deviceId);
+  if (!tokens)
+    throw new Error("Failed to authenticate with Spotify API");
+
+  const res = await fetch("https://api.spotify.com/v1/me/playlists", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${tokens.accessToken}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      name: title,
+      description: description.replace(/[?&=]/g, ' '),
+      public: false,
+    }),
+  });
+
+  const playlist = await res.json();
+  console.log(playlist);
+
+  if (!playlist.id)
+    throw new Error("Failed to create Spotify Playlist :(");
+  return playlist.id;
+}
+
+export async function addItemsToPlaylist(
+  deviceId: string,
+  playlistId: string,
+  uris: string[]
+) {
+  const tokens = await getAccessToken(deviceId);
+  if (!tokens)
+    throw new Error("Failed to authenticate with Spotify API");
+
+  const res = await fetch(`https://api.spotify.com/v1/playlists/${playlistId}/items`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${tokens.accessToken}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      uris: uris
+    }),
+  });
+
+  return res;
 }
 
 export async function getAllPlaylistItems(deviceId: string, playlistId: string):

@@ -1,26 +1,26 @@
-import { Platform, Track } from "@lib/custom_types";
+import { Platform, PlaylistItem, Track } from "@lib/custom_types";
 import spotify from "@services/spotify_service";
 import YTMusic from "ytmusic-api";
 
 const ytm = new YTMusic();
 await ytm.initialize();
 
-export async function translateTrack(track: Track, platform?: Platform):
-    Promise<Track> {
+export async function translateTrack(track: PlaylistItem, platform?: Platform):
+    Promise<PlaylistItem> {
     if (!platform) {
         platform = (track.platform === "ytm" ? "spotify" : "ytm");
     }
 
     if (platform === "ytm") {
-        return ytmSearch(track);
+        return await ytmSearch(track);
     } else {
-        return spotifySearch(track);
+        return await spotifySearch(track);
     }
 }
 
-async function ytmSearch(track: Track): Promise<Track> {
+async function ytmSearch(track: PlaylistItem): Promise<PlaylistItem> {
     const res = await ytm.searchSongs(
-        `track:${track.name} album:${track.album} artist:${track.artists[0]}`);
+        `${track.title} ${track.artist}`);
 
     if (res.length > 0) {
         return { ...track, platform: "ytm", id: res[0].videoId }
@@ -29,9 +29,9 @@ async function ytmSearch(track: Track): Promise<Track> {
     return { ...track, platform: "ytm", id: "Not Found :(" };
 }
 
-async function spotifySearch(track: Track): Promise<Track> {
+async function spotifySearch(track: PlaylistItem): Promise<PlaylistItem> {
     const res = await spotify.search(
-        `track:${track.name} album:${track.album} artist:${track.artists[0]}`,
+        `track:${track.title} artist:${track.artist}`,
         ["track"]);
 
     if (res.tracks.items.length > 0) {

@@ -29,6 +29,7 @@ Open http://localhost:3000/ with your browser to see the result.
 ## API Endpoints
 
 ### `POST /register`
+Registers a new device by submitting its RSA public key and returns a unique device ID to be used for future authenticated requests.
 #### Body:
 ```ts
 {
@@ -43,6 +44,7 @@ Open http://localhost:3000/ with your browser to see the result.
 ```
 
 ### `POST /oauth/register_code`
+Exchanges an authorization code for access and refresh tokens from the specified music platform and saves them for the device.
 #### Headers:
 ```ts
 {
@@ -67,6 +69,7 @@ Open http://localhost:3000/ with your browser to see the result.
 ```
 
 ### `GET /oauth/status`
+Checks the authentication status to determine if the device has valid tokens for its YouTube Music and Spotify accounts.
 #### Headers:
 ```ts
 {
@@ -84,6 +87,7 @@ Open http://localhost:3000/ with your browser to see the result.
 ```
 
 ### `GET /playlists/list`
+Retrieves a complete list of playlists owned by the user on the specified platform.
 #### Headers:
 ```ts
 {
@@ -114,6 +118,7 @@ Array<{
 ```
 
 ### `GET /playlists/contents`
+Fetches the items and tracks corresponding to a specific playlist from the chosen platform.
 #### Headers:
 ```ts
 {
@@ -148,6 +153,7 @@ Array<{
 ```
 
 ### `POST /transfer/start`
+Initiates a background job to transfer a playlist from the source platform to the destination platform.
 #### Headers:
 ```ts
 {
@@ -170,9 +176,10 @@ Array<{
   message: string
 }
 ```
-*(Optionally returns 409 Conflict if a transfer is already active)*
+*(Optionally returns 409 Conflict if a transfer is already active, intended to be used on app open to skip to update page, so the user still gets the transfer updates even if it closes the app mid transfer)*
 
 ### `GET /transfer/updates`
+Connects to a Server-Sent Events (SSE) stream to receive real-time updates on the progress of the active playlist transfer.
 #### Headers:
 ```ts
 {

@@ -189,14 +189,47 @@ Connects to a Server-Sent Events (SSE) stream to receive real-time updates on th
 }
 ```
 #### Returns:
-Server-Sent Events (SSE) stream.
+Server-Sent Events (SSE) stream emitting different events depending on the current status:
+
+**Starting:**
 ```ts
-// Event data format
 {
-  status: "starting" | "in_progress" | "completed" | "error",
-  totalItems?: number, // Present on in_progress
-  currentItem?: number, // Present on in_progress
-  currentSong?: string, // Present on in_progress
-  type?: "sync" // Present on initial sync event
+  status: "starting"
+}
+```
+
+**In Progress:**
+```ts
+{
+  status: "in_progress",
+  totalItems: number,
+  currentItem: number,
+  currentSong: string
+}
+```
+
+**Completed:**
+```ts
+{
+  status: "completed",
+  totalItems: number,
+  failedItems: Array<{
+    platform: "ytm" | "spotify",
+    id: string,
+    title: string,
+    artist: string,
+    thumbnail: {
+      url: string,
+      height: number,
+      width: number
+    }
+  }>
+}
+```
+
+**Error:**
+```ts
+{
+  status: "error"
 }
 ```

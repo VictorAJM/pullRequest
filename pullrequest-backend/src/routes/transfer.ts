@@ -67,7 +67,7 @@ export const playlistTransferRoutes = new Elysia({ prefix: '/transfer' })
     set.headers['Connection'] = 'keep-alive';
 
     const lastState = activeTransfers.get(deviceId);
-    yield `data: ${JSON.stringify({ ...lastState, type: 'sync' })}\n\n`;
+    yield `data: ${JSON.stringify(lastState)}\n\n`;
 
     try {
       while (activeTransfers.has(deviceId)) {

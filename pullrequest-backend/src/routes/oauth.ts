@@ -1,5 +1,5 @@
 import { Elysia, t } from 'elysia';
-import { saveAccessTokens } from '@services/database';
+import { saveAccessTokens, getOauthTokens } from '@services/database';
 import { getAccessTokenFromCode as getSpotifyAccessTokenFromCode } from '@services/spotify_api_client';
 import { getAccessTokenFromCode as getYoutubeAccessTokenFromCode } from '@services/youtube_api_client';
 
@@ -73,4 +73,17 @@ export const oauthRoute = new Elysia({ prefix: 'oauth' })
       ]),
       code: t.String(),
     })
+  }).get('status', ({ headers, body }) => {
+    const deviceId = headers['x-device-id'];
+    if (!deviceId) {
+      return;
+    }
+
+    const ytmTokens = getOauthTokens(deviceId, 'ytm');
+    const spotifyTokens = getOauthTokens(deviceId, 'spotify');
+
+    return {
+      ytm: ytmTokens !== null,
+      spotify: spotifyTokens !== null
+    };
   });

@@ -1,7 +1,6 @@
 import { createYouTubeClient, getAllPlaylistItems as getAllYoutubePlaylistItems } from '@services/youtube_api_client';
 import { createSpotifyClient, getAllPlaylistItems as getAllSpotifyPlaylistImtes, createNewPlaylist, addItemsToPlaylist } from '@services/spotify_api_client';
 import { youtube_v3 } from 'googleapis';
-import { SpotifyApi } from "@spotify/web-api-ts-sdk";
 import { translateTrack } from '@lib/track_translate';
 
 const ctx: Worker = self as any;

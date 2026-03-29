@@ -28,6 +28,7 @@ dependencies:
 
   # RSA keypair generation and signing for device authentication
   fast_rsa: ^3.6.2
+  google_sign_in: ^7.2.0
 
 dev_dependencies:
   flutter_test:

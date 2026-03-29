@@ -26,7 +26,9 @@
       "Bash(find C:UsersvictopullRequestpullrequest-backend -type f -name *.json -o -name *.ts -o -name *.js -o -name *.env* -o -name *.md)",
       "Bash(ls /c/Users/victo/pullRequest/*.md)",
       "Bash(cd:*)",
-      "Bash(find /c/Users/victo/pullRequest/pull_request/test -type f -name *.dart)"
+      "Bash(find /c/Users/victo/pullRequest/pull_request/test -type f -name *.dart)",
+      "WebFetch(domain:pub.dev)",
+      "Bash(dart analyze:*)"
     ]
   }
 }

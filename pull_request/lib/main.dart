@@ -4,50 +4,40 @@ import 'app.dart';
 import 'providers/auth_provider.dart';
 import 'providers/playlist_provider.dart';
 import 'providers/transfer_provider.dart';
-import 'services/composite_auth_service.dart';
-import 'services/composite_playlist_service.dart';
-import 'services/mock_auth_service.dart';
-import 'services/mock_playlist_service.dart';
-import 'services/mock_transfer_service.dart';
+import 'services/api_client.dart';
+import 'services/backend_auth_service.dart';
+import 'services/backend_playlist_service.dart';
+import 'services/backend_transfer_service.dart';
+import 'services/device_service.dart';
 import 'services/platform_service.dart';
-import 'services/spotify_auth_service.dart';
-import 'services/spotify_playlist_service.dart';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Instantiate service implementations.
-  // To swap a mock for a real implementation, replace its entry in the map —
-  // no provider or screen code changes required.
-  final spotifyAuth = SpotifyAuthService();
+  final deviceService = DeviceService();
 
-  final authRepository = CompositeAuthService({
-    'spotify': spotifyAuth,
-    'youtube_music': MockAuthService(), // TODO: replace with YtMusicAuthService
-  });
-  final playlistRepository = CompositePlaylistService({
-    'spotify': SpotifyPlaylistService(auth: spotifyAuth),
-    'youtube_music': MockPlaylistService(), // TODO: replace with YtMusicPlaylistService
-  });
-  final transferRepository = MockTransferService();
+  try {
+    await deviceService.init();
+  } catch (e) {
+    runApp(_ErrorApp(message: 'Could not connect to server:\n$e'));
+    return;
+  }
+
+  final apiClient = ApiClient(deviceService);
+  final authRepository = BackendAuthService(apiClient);
+  final playlistRepository = BackendPlaylistService(apiClient);
+  final transferRepository = BackendTransferService(apiClient);
 
   runApp(
     MultiProvider(
       providers: [
-        // Static config — no state changes, provided for testability.
         Provider<PlatformService>(create: (_) => PlatformService()),
-
-        // Auth state per connected platform.
         ChangeNotifierProvider(
           create: (_) => AuthProvider(repository: authRepository),
         ),
-
-        // Playlist data, cache, and selection state.
         ChangeNotifierProvider(
           create: (_) => PlaylistProvider(repository: playlistRepository),
         ),
-
-        // Active transfer stream and progress.
         ChangeNotifierProvider(
           create: (_) => TransferProvider(repository: transferRepository),
         ),
@@ -55,4 +45,34 @@ void main() {
       child: const PullRequestApp(),
     ),
   );
+}
+
+class _ErrorApp extends StatelessWidget {
+  final String message;
+  const _ErrorApp({required this.message});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: Scaffold(
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(32),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.cloud_off, size: 64, color: Colors.grey),
+                const SizedBox(height: 16),
+                Text(
+                  message,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(fontSize: 16),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }

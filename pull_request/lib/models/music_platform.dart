@@ -6,23 +6,13 @@ class MusicPlatform {
   final String iconPath;
   final Color brandColor;
 
-  /// OAuth client ID — null until credentials are configured for this platform.
-  final String? oauthClientId;
-
-  /// OAuth permission scopes required for playlist access.
-  final List<String> scopes;
-
   const MusicPlatform({
     required this.id,
     required this.name,
     required this.iconPath,
     required this.brandColor,
-    this.oauthClientId,
-    this.scopes = const [],
   });
 
-  /// Equality is based solely on [id] — two platforms with the same ID
-  /// are considered the same regardless of any other field.
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||

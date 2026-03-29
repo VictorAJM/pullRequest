@@ -1,25 +1,18 @@
 import 'package:flutter/foundation.dart';
-import '../core/errors/app_exception.dart';
 import '../models/playlist.dart';
 import '../repositories/playlist_repository.dart';
 
-/// Manages playlist loading, caching, and selection state.
+/// Manages playlist loading, caching, detail fetching, and selection.
 ///
-/// Playlist data is cached by platform ID — a second call to [loadPlaylists]
-/// for the same platform returns immediately from cache.
-/// Call [clearCache] when a fresh fetch is needed (e.g. after OAuth re-auth).
-///
-/// Selection state persists across navigation. Call [clearSelection] at the
-/// start of each new transfer flow to avoid stale selections.
+/// Uses single-select: one playlist at a time for transfer.
 class PlaylistProvider extends ChangeNotifier {
   final PlaylistRepository _repository;
 
   final Map<String, List<Playlist>> _playlists = {};
   final Map<String, bool> _loading = {};
   final Map<String, String?> _errors = {};
-  final Set<String> _selectedIds = {};
+  String? _selectedPlaylistId;
 
-  // ── Detail state (one fetched Playlist with songs per playlist ID) ─────────
   final Map<String, Playlist?> _details = {};
   final Map<String, bool> _loadingDetails = {};
   final Map<String, String?> _detailErrors = {};
@@ -27,21 +20,15 @@ class PlaylistProvider extends ChangeNotifier {
   PlaylistProvider({required PlaylistRepository repository})
       : _repository = repository;
 
-  // ── Playlist data ─────────────────────────────────────────────────────────
+  // ── Playlist list ────────────────────────────────────────────────────────
 
-  /// All playlists loaded for [platformId], or an empty list if not yet loaded.
   List<Playlist> playlistsFor(String platformId) =>
       _playlists[platformId] ?? const [];
 
-  /// Whether playlists are currently being fetched for [platformId].
   bool isLoading(String platformId) => _loading[platformId] ?? false;
 
-  /// Last error message for [platformId], or null if no error occurred.
   String? errorFor(String platformId) => _errors[platformId];
 
-  /// Fetches playlists for [platformId], using cache when available.
-  ///
-  /// Call with [forceRefresh] = true to bypass the cache.
   Future<void> loadPlaylists(
     String platformId, {
     bool forceRefresh = false,
@@ -54,8 +41,6 @@ class PlaylistProvider extends ChangeNotifier {
 
     try {
       _playlists[platformId] = await _repository.fetchPlaylists(platformId);
-    } on PlaylistException catch (e) {
-      _errors[platformId] = e.message;
     } catch (e) {
       _errors[platformId] = e.toString();
     } finally {
@@ -71,21 +56,39 @@ class PlaylistProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  // ── Playlist detail ────────────────────────────────────────────────────────
+  // ── Single selection ─────────────────────────────────────────────────────
 
-  /// Fetched [Playlist] with full song list for [playlistId], or null if not
-  /// yet loaded.
+  String? get selectedPlaylistId => _selectedPlaylistId;
+
+  Playlist? get selectedPlaylist {
+    if (_selectedPlaylistId == null) return null;
+    for (final list in _playlists.values) {
+      for (final p in list) {
+        if (p.id == _selectedPlaylistId) return p;
+      }
+    }
+    return null;
+  }
+
+  void selectPlaylist(String? playlistId) {
+    _selectedPlaylistId = playlistId;
+    notifyListeners();
+  }
+
+  void clearSelection() {
+    _selectedPlaylistId = null;
+    notifyListeners();
+  }
+
+  // ── Playlist detail ──────────────────────────────────────────────────────
+
   Playlist? detailsFor(String playlistId) => _details[playlistId];
 
-  /// Whether a detail fetch is in progress for [playlistId].
   bool isLoadingDetails(String playlistId) =>
       _loadingDetails[playlistId] ?? false;
 
-  /// Last error from a detail fetch for [playlistId], or null if no error.
   String? detailErrorFor(String playlistId) => _detailErrors[playlistId];
 
-  /// Fetches the full playlist (with songs) for [playlistId], caching the
-  /// result. Call with [forceRefresh] = true to bypass the cache.
   Future<void> loadPlaylistDetails(
     String platformId,
     String playlistId, {
@@ -98,56 +101,34 @@ class PlaylistProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      _details[playlistId] = await _repository.fetchPlaylistDetails(
-        platformId,
-        playlistId,
+      final songs =
+          await _repository.fetchPlaylistSongs(platformId, playlistId);
+
+      // Merge with list-level metadata if available.
+      Playlist? listPlaylist;
+      for (final list in _playlists.values) {
+        for (final p in list) {
+          if (p.id == playlistId) {
+            listPlaylist = p;
+            break;
+          }
+        }
+        if (listPlaylist != null) break;
+      }
+
+      _details[playlistId] = Playlist(
+        id: playlistId,
+        title: listPlaylist?.title ?? '',
+        itemCount: songs.length,
+        imageUrl: listPlaylist?.imageUrl,
+        platformId: platformId,
+        songs: songs,
       );
-    } on PlaylistException catch (e) {
-      _detailErrors[playlistId] = e.message;
     } catch (e) {
       _detailErrors[playlistId] = e.toString();
     } finally {
       _loadingDetails[playlistId] = false;
       notifyListeners();
     }
-  }
-
-  // ── Selection state ───────────────────────────────────────────────────────
-
-  /// Immutable view of currently selected playlist IDs.
-  Set<String> get selectedIds => Set.unmodifiable(_selectedIds);
-
-  /// All selected [Playlist] objects across all loaded platforms.
-  List<Playlist> get selectedPlaylists => _playlists.values
-      .expand((list) => list)
-      .where((p) => _selectedIds.contains(p.id))
-      .toList();
-
-  bool isSelected(String playlistId) => _selectedIds.contains(playlistId);
-
-  void toggleSelection(String playlistId) {
-    if (_selectedIds.contains(playlistId)) {
-      _selectedIds.remove(playlistId);
-    } else {
-      _selectedIds.add(playlistId);
-    }
-    notifyListeners();
-  }
-
-  void selectAll(List<Playlist> playlists) {
-    _selectedIds.addAll(playlists.map((p) => p.id));
-    notifyListeners();
-  }
-
-  void deselectAll(List<Playlist> playlists) {
-    for (final p in playlists) {
-      _selectedIds.remove(p.id);
-    }
-    notifyListeners();
-  }
-
-  void clearSelection() {
-    _selectedIds.clear();
-    notifyListeners();
   }
 }

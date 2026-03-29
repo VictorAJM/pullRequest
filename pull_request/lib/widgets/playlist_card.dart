@@ -22,7 +22,7 @@ class PlaylistCard extends StatelessWidget {
       onTap: onTap,
       child: Container(
         margin: const EdgeInsets.only(bottom: 12),
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(12),
@@ -33,31 +33,27 @@ class PlaylistCard extends StatelessWidget {
         ),
         child: Row(
           children: [
-            // Checkbox
-            Container(
-              width: 24,
-              height: 24,
-              decoration: BoxDecoration(
-                color:
-                    isSelected ? AppColors.primaryBlue : Colors.transparent,
-                borderRadius: BorderRadius.circular(6),
-                border: Border.all(
-                  color: isSelected ? AppColors.primaryBlue : Colors.grey,
-                  width: 2,
-                ),
-              ),
-              child: isSelected
-                  ? const Icon(Icons.check, size: 16, color: Colors.white)
-                  : null,
+            // Playlist thumbnail
+            ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: playlist.imageUrl != null
+                  ? Image.network(
+                      playlist.imageUrl!,
+                      width: 48,
+                      height: 48,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, trace) => _defaultIcon(),
+                    )
+                  : _defaultIcon(),
             ),
-            const SizedBox(width: 16),
+            const SizedBox(width: 12),
             // Info
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    playlist.name,
+                    playlist.title,
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
@@ -73,27 +69,16 @@ class PlaylistCard extends StatelessWidget {
                           size: 14, color: Colors.grey[600]),
                       const SizedBox(width: 4),
                       Text(
-                        '${playlist.trackCount} tracks',
+                        '${playlist.itemCount} tracks',
                         style: TextStyle(
                             fontSize: 14, color: Colors.grey[600]),
                       ),
                     ],
                   ),
-                  if (playlist.description != null &&
-                      playlist.description!.isNotEmpty) ...[
-                    const SizedBox(height: 4),
-                    Text(
-                      playlist.description!,
-                      style: TextStyle(
-                          fontSize: 13, color: Colors.grey[500]),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ],
                 ],
               ),
             ),
-            const SizedBox(width: 8),
+            // Details button
             IconButton(
               icon: const Icon(Icons.info_outline,
                   color: AppColors.primaryBlue),
@@ -103,9 +88,28 @@ class PlaylistCard extends StatelessWidget {
                 extra: playlist,
               ),
             ),
+            // Selection indicator
+            Icon(
+              isSelected
+                  ? Icons.radio_button_checked
+                  : Icons.radio_button_unchecked,
+              color: isSelected ? AppColors.primaryBlue : Colors.grey,
+            ),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _defaultIcon() {
+    return Container(
+      width: 48,
+      height: 48,
+      decoration: BoxDecoration(
+        color: AppColors.lightBlue,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: const Icon(Icons.music_note, color: AppColors.primaryBlue),
     );
   }
 }

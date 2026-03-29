@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import '../core/router/app_router.dart';
 import '../core/theme/app_colors.dart';
 import '../core/theme/app_text_styles.dart';
 import '../models/music_platform.dart';
-import '../models/transfer_progress.dart';
+import '../models/song.dart';
 import '../providers/playlist_provider.dart';
 import '../providers/transfer_provider.dart';
 
@@ -19,121 +20,94 @@ class PlaylistTransferScreen extends StatefulWidget {
   });
 
   @override
-  State<PlaylistTransferScreen> createState() => _PlaylistTransferScreenState();
+  State<PlaylistTransferScreen> createState() =>
+      _PlaylistTransferScreenState();
 }
 
 class _PlaylistTransferScreenState extends State<PlaylistTransferScreen> {
-  bool _dialogShown = false;
-
-  /// Cached to avoid calling context.read() inside dispose(), which is
-  /// unsafe after the widget is deactivated.
-  late final TransferProvider _transferProvider;
-
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      _transferProvider = context.read<TransferProvider>();
-      _transferProvider.addListener(_onTransferChanged);
       _startTransfer();
     });
   }
 
-  @override
-  void dispose() {
-    _transferProvider.removeListener(_onTransferChanged);
-    super.dispose();
-  }
-
   void _startTransfer() {
-    final playlists = context.read<PlaylistProvider>().selectedPlaylists;
+    final playlist = context.read<PlaylistProvider>().selectedPlaylist;
+    if (playlist == null) return;
+
     context.read<TransferProvider>().startTransfer(
-          playlists,
+          playlist.id,
           widget.sourcePlatform.id,
-          widget.destinationPlatform.id,
         );
   }
 
-  void _onTransferChanged() {
-    final provider = context.read<TransferProvider>();
-    if (provider.isCompleted && !_dialogShown && mounted) {
-      _dialogShown = true;
-      Future.delayed(const Duration(milliseconds: 500), _showCompletionDialog);
-    }
+  void _goHome() {
+    context.read<TransferProvider>().reset();
+    context.go(AppRoutes.home);
   }
 
-  Future<void> _cancelTransfer() async {
-    final confirmed = await showDialog<bool>(
+  void _showFailedSongs(List<Song> songs) {
+    showModalBottomSheet(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Cancel Transfer?'),
-        content: const Text(
-          'Are you sure you want to cancel? Progress will be lost.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Continue Transfer'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text(
-              'Cancel',
-              style: TextStyle(color: Colors.red),
-            ),
-          ),
-        ],
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-    );
-
-    if (confirmed == true && mounted) {
-      await context.read<TransferProvider>().cancel();
-      if (mounted) context.pop();
-    }
-  }
-
-  void _showCompletionDialog() {
-    if (!mounted) return;
-    final total = context.read<PlaylistProvider>().selectedPlaylists.length;
-
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => AlertDialog(
-        title: Row(
+      builder: (context) => DraggableScrollableSheet(
+        initialChildSize: 0.5,
+        maxChildSize: 0.8,
+        minChildSize: 0.3,
+        expand: false,
+        builder: (context, scrollController) => Column(
           children: [
-            Container(
-              width: 48,
-              height: 48,
-              decoration: BoxDecoration(
-                color: Colors.green.withValues(alpha: 0.1),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.check_circle,
-                color: Colors.green,
-                size: 32,
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Text(
+                'Songs not found (${songs.length})',
+                style: AppTextStyles.heading3,
               ),
             ),
-            const SizedBox(width: 12),
-            const Expanded(child: Text('Transfer Complete!')),
+            const Divider(height: 1),
+            Expanded(
+              child: ListView.builder(
+                controller: scrollController,
+                padding: const EdgeInsets.all(16),
+                itemCount: songs.length,
+                itemBuilder: (context, index) {
+                  final song = songs[index];
+                  return ListTile(
+                    leading: ClipRRect(
+                      borderRadius: BorderRadius.circular(4),
+                      child: song.imageUrl != null
+                          ? Image.network(
+                              song.imageUrl!,
+                              width: 40,
+                              height: 40,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, trace) =>
+                                  const Icon(Icons.music_note),
+                            )
+                          : const Icon(Icons.music_note),
+                    ),
+                    title: Text(
+                      song.title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    subtitle: Text(
+                      song.artist,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  );
+                },
+              ),
+            ),
           ],
         ),
-        content: Text(
-          'Successfully transferred $total '
-          'playlist${total == 1 ? '' : 's'} to '
-          '${widget.destinationPlatform.name}.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              context.pop();
-            },
-            child: const Text('Done'),
-          ),
-        ],
       ),
     );
   }
@@ -143,19 +117,18 @@ class _PlaylistTransferScreenState extends State<PlaylistTransferScreen> {
     return Consumer<TransferProvider>(
       builder: (context, provider, _) {
         return PopScope(
-          canPop: provider.isCompleted || provider.isCancelled,
-          onPopInvokedWithResult: (didPop, _) {
-            if (!didPop) _cancelTransfer();
-          },
+          canPop: provider.isCompleted || provider.hasError,
           child: Scaffold(
             appBar: AppBar(
-              title: const Text('Transferring Playlists'),
-              leading: IconButton(
-                icon: const Icon(Icons.close),
-                onPressed: provider.isCompleted || provider.isCancelled
-                    ? () => context.pop()
-                    : _cancelTransfer,
-              ),
+              title: const Text('Transferring'),
+              automaticallyImplyLeading: false,
+              actions: [
+                if (provider.isCompleted || provider.hasError)
+                  IconButton(
+                    icon: const Icon(Icons.close),
+                    onPressed: _goHome,
+                  ),
+              ],
             ),
             body: Padding(
               padding: const EdgeInsets.all(24.0),
@@ -166,27 +139,12 @@ class _PlaylistTransferScreenState extends State<PlaylistTransferScreen> {
                   const SizedBox(height: 48),
                   _buildProgressCircle(provider),
                   const SizedBox(height: 48),
-                  _buildStatusText(provider),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Please keep the app open during transfer.',
-                    style: AppTextStyles.caption.copyWith(
-                      color: Colors.grey[600],
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 48),
-                  if (!provider.isCompleted && !provider.isCancelled)
-                    OutlinedButton(
-                      onPressed: _cancelTransfer,
-                      style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 32,
-                          vertical: 12,
-                        ),
-                      ),
-                      child: const Text('Cancel'),
-                    ),
+                  if (provider.isCompleted)
+                    _buildCompletionSection(provider)
+                  else if (provider.hasError)
+                    _buildErrorSection(provider)
+                  else
+                    _buildProgressSection(provider),
                 ],
               ),
             ),
@@ -202,11 +160,8 @@ class _PlaylistTransferScreenState extends State<PlaylistTransferScreen> {
       children: [
         _platformColumn(widget.sourcePlatform),
         const SizedBox(width: 24),
-        const Icon(
-          Icons.arrow_forward,
-          size: 32,
-          color: AppColors.primaryBlue,
-        ),
+        const Icon(Icons.arrow_forward,
+            size: 32, color: AppColors.primaryBlue),
         const SizedBox(width: 24),
         _platformColumn(widget.destinationPlatform),
       ],
@@ -224,6 +179,9 @@ class _PlaylistTransferScreenState extends State<PlaylistTransferScreen> {
   }
 
   Widget _buildProgressCircle(TransferProvider provider) {
+    final isComplete = provider.isCompleted && !provider.hasError;
+    final hasError = provider.hasError;
+
     return SizedBox(
       width: 200,
       height: 200,
@@ -237,46 +195,110 @@ class _PlaylistTransferScreenState extends State<PlaylistTransferScreen> {
               value: provider.overallProgress,
               strokeWidth: 12,
               backgroundColor: AppColors.lightBlue,
-              valueColor: const AlwaysStoppedAnimation<Color>(
-                AppColors.primaryBlue,
+              valueColor: AlwaysStoppedAnimation<Color>(
+                hasError
+                    ? Colors.red
+                    : isComplete
+                        ? Colors.green
+                        : AppColors.primaryBlue,
               ),
             ),
           ),
-          Text(
-            '${(provider.overallProgress * 100).toInt()}%',
-            style: AppTextStyles.heading1.copyWith(fontSize: 48),
-          ),
+          if (isComplete)
+            const Icon(Icons.check_circle, size: 64, color: Colors.green)
+          else if (hasError)
+            const Icon(Icons.error, size: 64, color: Colors.red)
+          else
+            Text(
+              '${(provider.overallProgress * 100).toInt()}%',
+              style: AppTextStyles.heading1.copyWith(fontSize: 48),
+            ),
         ],
       ),
     );
   }
 
-  Widget _buildStatusText(TransferProvider provider) {
-    final progress = provider.currentProgress;
-    if (progress == null) return const SizedBox.shrink();
+  Widget _buildProgressSection(TransferProvider provider) {
+    final progress = provider.progress;
 
     return Column(
       children: [
-        Text(progress.playlistName, style: AppTextStyles.heading3),
-        const SizedBox(height: 8),
-        if (progress.currentSongTitle != null &&
-            progress.status == TransferStatus.inProgress)
+        if (progress?.currentSong != null)
           Text(
-            'Searching: "${progress.currentSongTitle}"',
-            style: AppTextStyles.caption.copyWith(color: Colors.grey[600]),
+            'Searching: "${progress!.currentSong}"',
+            style:
+                AppTextStyles.caption.copyWith(color: Colors.grey[600]),
             textAlign: TextAlign.center,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
           ),
-        const SizedBox(height: 4),
+        const SizedBox(height: 8),
+        if (progress != null)
+          Text(
+            '${progress.currentItem} of ${progress.totalItems} songs',
+            style: AppTextStyles.label.copyWith(color: Colors.grey[600]),
+          ),
+        const SizedBox(height: 16),
         Text(
-          'Adding to ${widget.destinationPlatform.name}...',
+          'Please keep the app open during transfer.',
           style: AppTextStyles.caption.copyWith(color: Colors.grey[600]),
           textAlign: TextAlign.center,
         ),
+      ],
+    );
+  }
+
+  Widget _buildCompletionSection(TransferProvider provider) {
+    final progress = provider.progress;
+    final failed = provider.failedSongs;
+    final total = progress?.totalItems ?? 0;
+    final transferred = total - failed.length;
+
+    return Column(
+      children: [
+        Text('Transfer Complete!', style: AppTextStyles.heading2),
         const SizedBox(height: 8),
         Text(
-          'Playlist ${provider.completedPlaylists + 1} '
-          'of ${provider.totalPlaylists}',
-          style: AppTextStyles.label.copyWith(color: Colors.grey[600]),
+          failed.isEmpty
+              ? 'All $total songs transferred successfully.'
+              : '$transferred of $total songs transferred.',
+          style: AppTextStyles.body.copyWith(color: Colors.grey[600]),
+          textAlign: TextAlign.center,
+        ),
+        if (failed.isNotEmpty) ...[
+          const SizedBox(height: 12),
+          TextButton.icon(
+            onPressed: () => _showFailedSongs(failed),
+            icon: const Icon(Icons.warning_amber, color: Colors.orange),
+            label: Text(
+              '${failed.length} songs could not be found',
+              style: const TextStyle(color: Colors.orange),
+            ),
+          ),
+        ],
+        const SizedBox(height: 24),
+        ElevatedButton(
+          onPressed: _goHome,
+          child: const Text('Done'),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildErrorSection(TransferProvider provider) {
+    return Column(
+      children: [
+        Text('Transfer Failed', style: AppTextStyles.heading2),
+        const SizedBox(height: 8),
+        Text(
+          provider.error ?? 'An unexpected error occurred.',
+          style: AppTextStyles.body.copyWith(color: Colors.grey[600]),
+          textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: 24),
+        ElevatedButton(
+          onPressed: _goHome,
+          child: const Text('Go Home'),
         ),
       ],
     );

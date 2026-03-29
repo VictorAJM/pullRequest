@@ -19,7 +19,7 @@ export function getOauthTokens(deviceId: string, platform: Platform): {
   refresh_token: string,
   expires_at: number
 } | null {
-  return db.prepare(`
+  const result = db.prepare(`
           SELECT
             ${platform}_oauth_token as oauth_token,
             ${platform}_refresh_token as refresh_token,
@@ -28,7 +28,18 @@ export function getOauthTokens(deviceId: string, platform: Platform): {
           WHERE device_id = $deviceId
         `).get({
     $deviceId: deviceId
-  }) as { oauth_token: string, refresh_token: string, expires_at: number } | null;
+  }) as { oauth_token: string | null, refresh_token: string | null, expires_at: number | null } | null;
+
+  // Verificamos si no hay resultado, o si el token viene nulo
+  if (!result || !result.oauth_token) {
+    return null;
+  }
+
+  return {
+    oauth_token: result.oauth_token,
+    refresh_token: result.refresh_token!,
+    expires_at: result.expires_at!
+  };
 }
 
 export function saveAccessTokens(

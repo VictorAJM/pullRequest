@@ -1,53 +1,35 @@
+import 'song.dart';
+
 class TransferProgress {
-  final String playlistId;
-  final String playlistName;
-  final String? currentSongTitle;
-  final int totalSongs;
-  final int transferredSongs;
-  final TransferStatus status;
-  final String? errorMessage;
+  final String status;
+  final int totalItems;
+  final int currentItem;
+  final String? currentSong;
+  final List<Song> failedItems;
 
   const TransferProgress({
-    required this.playlistId,
-    required this.playlistName,
-    this.currentSongTitle,
-    required this.totalSongs,
-    required this.transferredSongs,
     required this.status,
-    this.errorMessage,
+    this.totalItems = 0,
+    this.currentItem = 0,
+    this.currentSong,
+    this.failedItems = const [],
   });
 
   double get progress {
-    if (totalSongs == 0) return 0.0;
-    return transferredSongs / totalSongs;
+    if (totalItems == 0) return 0.0;
+    return currentItem / totalItems;
   }
 
-  /// A sentinel used to explicitly pass [null] through [copyWith].
-  static const _absent = Object();
-
-  TransferProgress copyWith({
-    String? playlistId,
-    String? playlistName,
-    Object? currentSongTitle = _absent,
-    int? totalSongs,
-    int? transferredSongs,
-    TransferStatus? status,
-    Object? errorMessage = _absent,
-  }) {
+  factory TransferProgress.fromJson(Map<String, dynamic> json) {
     return TransferProgress(
-      playlistId: playlistId ?? this.playlistId,
-      playlistName: playlistName ?? this.playlistName,
-      currentSongTitle: currentSongTitle == _absent
-          ? this.currentSongTitle
-          : currentSongTitle as String?,
-      totalSongs: totalSongs ?? this.totalSongs,
-      transferredSongs: transferredSongs ?? this.transferredSongs,
-      status: status ?? this.status,
-      errorMessage: errorMessage == _absent
-          ? this.errorMessage
-          : errorMessage as String?,
+      status: json['status'] as String,
+      totalItems: json['totalItems'] as int? ?? 0,
+      currentItem: json['currentItem'] as int? ?? 0,
+      currentSong: json['current_song'] as String?,
+      failedItems: (json['failedItems'] as List?)
+              ?.map((e) => Song.fromJson(e as Map<String, dynamic>))
+              .toList() ??
+          const [],
     );
   }
 }
-
-enum TransferStatus { pending, inProgress, completed, failed, cancelled }

@@ -8,14 +8,12 @@ class PlatformService {
       name: 'Spotify',
       iconPath: 'assets/icons/spotify_icon.png',
       brandColor: Color(0xFF1DB954),
-      scopes: ['playlist-read-private', 'playlist-read-collaborative'],
     ),
     MusicPlatform(
-      id: 'youtube_music',
+      id: 'ytm',
       name: 'YouTube Music',
       iconPath: 'assets/icons/youtube_music_icon.png',
       brandColor: Color(0xFFFF0000),
-      scopes: ['https://www.googleapis.com/auth/youtube.readonly'],
     ),
   ];
 

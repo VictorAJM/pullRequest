@@ -3,19 +3,13 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../core/router/app_router.dart';
 import '../core/theme/app_text_styles.dart';
-import '../models/authorization_state.dart';
 import '../models/music_platform.dart';
 import '../providers/auth_provider.dart';
 
 class PlatformAuthorizationScreen extends StatefulWidget {
   final MusicPlatform platform;
-  final bool isSource;
 
-  const PlatformAuthorizationScreen({
-    super.key,
-    required this.platform,
-    required this.isSource,
-  });
+  const PlatformAuthorizationScreen({super.key, required this.platform});
 
   @override
   State<PlatformAuthorizationScreen> createState() =>
@@ -24,22 +18,33 @@ class PlatformAuthorizationScreen extends StatefulWidget {
 
 class _PlatformAuthorizationScreenState
     extends State<PlatformAuthorizationScreen> {
+  bool _isAuthorizing = false;
+  String? _error;
+
   Future<void> _handleAuthorize() async {
-    final result =
-        await context.read<AuthProvider>().authorize(widget.platform);
+    setState(() {
+      _isAuthorizing = true;
+      _error = null;
+    });
+
+    final success =
+        await context.read<AuthProvider>().authorize(widget.platform.id);
+
     if (!mounted) return;
-    _safeReturn(result.isAuthorized);
+
+    if (success) {
+      _safeReturn(true);
+    } else {
+      setState(() {
+        _isAuthorizing = false;
+        _error =
+            context.read<AuthProvider>().error ?? 'Authorization failed';
+      });
+    }
   }
 
   void _handleCancel() => _safeReturn(false);
 
-  /// Pops with [authorized] as the result so the caller can react to success
-  /// or failure without reading provider state across an async gap.
-  ///
-  /// Fallback: if there is nothing to pop (Android edge-case — the OAuth
-  /// callback intent can restart the Activity and clear the back-stack),
-  /// we go to platform selection so the user can restart the transfer instead
-  /// of being silently sent home.
   void _safeReturn(bool authorized) {
     if (context.canPop()) {
       context.pop(authorized);
@@ -47,10 +52,6 @@ class _PlatformAuthorizationScreenState
       context.go(AppRoutes.platformSelection);
     }
   }
-
-  bool get _isAuthorizing =>
-      context.watch<AuthProvider>().stateFor(widget.platform.id) ==
-      AuthorizationState.authorizing;
 
   @override
   Widget build(BuildContext context) {
@@ -99,12 +100,20 @@ class _PlatformAuthorizationScreenState
               ),
               const SizedBox(height: 24),
               const Text(
-                'To transfer your music, PullRequest needs permission to view '
-                'your public playlists. We will never post on your behalf or '
-                'share your data.',
+                'To transfer your music, PullRequest needs permission to '
+                'access your playlists. We will never post on your behalf '
+                'or share your data.',
                 style: AppTextStyles.body,
                 textAlign: TextAlign.center,
               ),
+              if (_error != null) ...[
+                const SizedBox(height: 16),
+                Text(
+                  _error!,
+                  style: AppTextStyles.caption.copyWith(color: Colors.red),
+                  textAlign: TextAlign.center,
+                ),
+              ],
               const SizedBox(height: 48),
               ElevatedButton(
                 onPressed: _isAuthorizing ? null : _handleAuthorize,

@@ -1,21 +1,10 @@
-import '../models/music_platform.dart';
-import '../models/authorization_result.dart';
-
-/// Abstract contract for platform OAuth authorization.
-///
-/// Concrete implementations:
-///   - MockAuthService     — simulates auth with a delay (current)
-///   - SpotifyAuthService  — real Spotify OAuth (planned)
-///   - YtMusicAuthService  — real YouTube Music OAuth (planned)
+/// Abstract contract for platform OAuth authorization via the backend.
 abstract class AuthRepository {
-  /// Launches the authorization flow for [platform] and returns the result.
-  ///
-  /// Throws [AuthException] on unrecoverable errors.
-  Future<AuthorizationResult> authorize(MusicPlatform platform);
+  /// Launches the OAuth flow for [platformId] and registers the
+  /// authorization code with the backend.
+  Future<void> authorize(String platformId);
 
-  /// Revokes stored credentials for [platformId].
-  Future<void> revokeAuth(String platformId);
-
-  /// Returns true if valid credentials are stored for [platformId].
-  Future<bool> isAuthorized(String platformId);
+  /// Returns a map of platform ID to authorization status.
+  /// e.g. {'spotify': true, 'ytm': false}
+  Future<Map<String, bool>> getAuthStatus();
 }

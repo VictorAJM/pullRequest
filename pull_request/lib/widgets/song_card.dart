@@ -20,24 +20,18 @@ class SongCard extends StatelessWidget {
       ),
       child: Row(
         children: [
-          // Track number
-          Container(
-            width: 32,
-            height: 32,
-            decoration: BoxDecoration(
-              color: AppColors.lightBlue,
-              borderRadius: BorderRadius.circular(6),
-            ),
-            child: Center(
-              child: Text(
-                '${index + 1}',
-                style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.darkBlue,
-                ),
-              ),
-            ),
+          // Thumbnail or track number
+          ClipRRect(
+            borderRadius: BorderRadius.circular(6),
+            child: song.imageUrl != null
+                ? Image.network(
+                    song.imageUrl!,
+                    width: 40,
+                    height: 40,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, trace) => _indexBadge(),
+                  )
+                : _indexBadge(),
           ),
           const SizedBox(width: 12),
           // Song info
@@ -62,29 +56,31 @@ class SongCard extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
-                if (song.album != null) ...[
-                  const SizedBox(height: 2),
-                  Text(
-                    song.album!,
-                    style: TextStyle(fontSize: 12, color: Colors.grey[500]),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
               ],
             ),
           ),
-          const SizedBox(width: 8),
-          // Duration
-          Text(
-            song.formattedDuration,
-            style: TextStyle(
-              fontSize: 13,
-              color: Colors.grey[600],
-              fontWeight: FontWeight.w500,
-            ),
-          ),
         ],
+      ),
+    );
+  }
+
+  Widget _indexBadge() {
+    return Container(
+      width: 40,
+      height: 40,
+      decoration: BoxDecoration(
+        color: AppColors.lightBlue,
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Center(
+        child: Text(
+          '${index + 1}',
+          style: const TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+            color: AppColors.darkBlue,
+          ),
+        ),
       ),
     );
   }

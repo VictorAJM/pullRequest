@@ -7,7 +7,6 @@ import '../../screens/platform_selection_screen.dart';
 import '../../screens/playlist_details_screen.dart';
 import '../../screens/playlist_selection_screen.dart';
 import '../../screens/playlist_transfer_screen.dart';
-import '../../screens/transfer_history_screen.dart';
 
 // ── Route path constants ────────────────────────────────────────────────────
 
@@ -19,19 +18,10 @@ class AppRoutes {
   static const authorize = '/authorize';
   static const playlistSelection = '/select-playlists';
   static const transfer = '/transfer';
-  static const history = '/history';
   static const playlistDetails = '/playlist-details';
 }
 
 // ── Navigation argument types ───────────────────────────────────────────────
-
-/// Passed as [GoRouterState.extra] when pushing [AppRoutes.authorize].
-class AuthorizationArgs {
-  final MusicPlatform platform;
-  final bool isSource;
-
-  const AuthorizationArgs({required this.platform, required this.isSource});
-}
 
 /// Passed as [GoRouterState.extra] when pushing [AppRoutes.transfer].
 class TransferArgs {
@@ -60,11 +50,8 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       path: AppRoutes.authorize,
       builder: (context, state) {
-        final args = state.extra as AuthorizationArgs;
-        return PlatformAuthorizationScreen(
-          platform: args.platform,
-          isSource: args.isSource,
-        );
+        final platform = state.extra as MusicPlatform;
+        return PlatformAuthorizationScreen(platform: platform);
       },
     ),
     GoRoute(
@@ -83,10 +70,6 @@ final GoRouter appRouter = GoRouter(
           destinationPlatform: args.destinationPlatform,
         );
       },
-    ),
-    GoRoute(
-      path: AppRoutes.history,
-      builder: (context, state) => const TransferHistoryScreen(),
     ),
     GoRoute(
       path: AppRoutes.playlistDetails,

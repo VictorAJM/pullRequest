@@ -13,23 +13,13 @@ class HomeScreen extends StatelessWidget {
     final platforms = context.read<PlatformService>().getAvailablePlatforms();
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('PullRequest'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.history),
-            tooltip: 'Transfer history',
-            onPressed: () => context.push(AppRoutes.history),
-          ),
-        ],
-      ),
+      appBar: AppBar(title: const Text('PullRequest')),
       body: Center(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24.0),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // Dynamic platform icons driven by PlatformService
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -45,17 +35,11 @@ class HomeScreen extends StatelessWidget {
                   const SizedBox(width: 20),
                   Column(
                     children: [
-                      Icon(
-                        Icons.arrow_forward,
-                        size: 30,
-                        color: Colors.grey[800],
-                      ),
+                      Icon(Icons.arrow_forward,
+                          size: 30, color: Colors.grey[800]),
                       const SizedBox(height: 4),
-                      Icon(
-                        Icons.arrow_back,
-                        size: 30,
-                        color: Colors.grey[800],
-                      ),
+                      Icon(Icons.arrow_back,
+                          size: 30, color: Colors.grey[800]),
                     ],
                   ),
                   const SizedBox(width: 20),

@@ -25,17 +25,10 @@ class _PlaylistDetailsScreenState extends State<PlaylistDetailsScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<PlaylistProvider>().loadPlaylistDetails(
-        widget.playlist.platformId,
-        widget.playlist.id,
-      );
+            widget.playlist.platformId,
+            widget.playlist.id,
+          );
     });
-  }
-
-  String _totalDuration(List<Song> songs) {
-    final total = songs.fold<int>(0, (sum, s) => sum + s.durationSeconds);
-    final h = total ~/ 3600;
-    final m = (total % 3600) ~/ 60;
-    return h > 0 ? '$h hr $m min' : '$m min';
   }
 
   @override
@@ -44,8 +37,6 @@ class _PlaylistDetailsScreenState extends State<PlaylistDetailsScreen> {
       builder: (context, provider, _) {
         final isLoading = provider.isLoadingDetails(widget.playlist.id);
         final error = provider.detailErrorFor(widget.playlist.id);
-        // Fall back to the metadata playlist while details load (shows name,
-        // description, and trackCount from the list response).
         final fullPlaylist =
             provider.detailsFor(widget.playlist.id) ?? widget.playlist;
 
@@ -94,30 +85,24 @@ class _PlaylistDetailsScreenState extends State<PlaylistDetailsScreen> {
       ),
       child: Column(
         children: [
-          Container(
-            width: 100,
-            height: 100,
-            decoration: BoxDecoration(
-              color: AppColors.primaryBlue,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: const Icon(Icons.music_note, size: 50, color: Colors.white),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: playlist.imageUrl != null
+                ? Image.network(
+                    playlist.imageUrl!,
+                    width: 120,
+                    height: 120,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, trace) => _defaultCover(),
+                  )
+                : _defaultCover(),
           ),
           const SizedBox(height: 16),
           Text(
-            playlist.name,
+            playlist.title,
             style: AppTextStyles.heading1,
             textAlign: TextAlign.center,
           ),
-          if (playlist.description != null &&
-              playlist.description!.isNotEmpty) ...[
-            const SizedBox(height: 8),
-            Text(
-              playlist.description!,
-              style: AppTextStyles.caption.copyWith(color: Colors.grey[600]),
-              textAlign: TextAlign.center,
-            ),
-          ],
           const SizedBox(height: 12),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -125,15 +110,9 @@ class _PlaylistDetailsScreenState extends State<PlaylistDetailsScreen> {
               Icon(Icons.music_note, size: 16, color: Colors.grey[600]),
               const SizedBox(width: 4),
               Text(
-                '${playlist.songs.isNotEmpty ? playlist.songs.length : playlist.trackCount} songs',
-                style: AppTextStyles.label.copyWith(color: Colors.grey[600]),
-              ),
-              const SizedBox(width: 16),
-              Icon(Icons.access_time, size: 16, color: Colors.grey[600]),
-              const SizedBox(width: 4),
-              Text(
-                _totalDuration(playlist.songs),
-                style: AppTextStyles.label.copyWith(color: Colors.grey[600]),
+                '${playlist.songs.isNotEmpty ? playlist.songs.length : playlist.itemCount} songs',
+                style:
+                    AppTextStyles.label.copyWith(color: Colors.grey[600]),
               ),
             ],
           ),
@@ -142,11 +121,23 @@ class _PlaylistDetailsScreenState extends State<PlaylistDetailsScreen> {
     );
   }
 
+  Widget _defaultCover() {
+    return Container(
+      width: 120,
+      height: 120,
+      decoration: BoxDecoration(
+        color: AppColors.primaryBlue,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: const Icon(Icons.music_note, size: 60, color: Colors.white),
+    );
+  }
+
   Widget _buildSkeleton() {
     return ListView.builder(
       padding: const EdgeInsets.all(16),
       itemCount: 6,
-      itemBuilder: (_, _) => const LoadingSongCard(),
+      itemBuilder: (context, index) => const LoadingSongCard(),
     );
   }
 

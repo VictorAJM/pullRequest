@@ -1,69 +1,61 @@
 import 'package:flutter/foundation.dart';
-import '../core/errors/app_exception.dart';
-import '../models/authorization_result.dart';
-import '../models/authorization_state.dart';
-import '../models/music_platform.dart';
 import '../repositories/auth_repository.dart';
-
-/// Manages OAuth authorization state for all connected music platforms.
+import 'dart:convert';
+/// Manages OAuth authorization state for all music platforms.
 ///
-/// Screens read authorization state via [stateFor] / [isAuthorized] and
-/// trigger flows via [authorize] / [revokeAuth].
+/// Screens check status via [isAuthorized] and trigger flows via
+/// [authorize]. Auth status is fetched from the backend.
 class AuthProvider extends ChangeNotifier {
   final AuthRepository _repository;
 
-  final Map<String, AuthorizationState> _states = {};
-  final Map<String, String> _errors = {};
+  Map<String, bool> _status = {};
+  bool _isLoading = false;
+  bool _isAuthorizing = false;
+  String? _error;
 
   AuthProvider({required AuthRepository repository})
       : _repository = repository;
 
-  /// Returns the current [AuthorizationState] for [platformId].
-  AuthorizationState stateFor(String platformId) =>
-      _states[platformId] ?? AuthorizationState.pending;
+  bool isAuthorized(String platformId) => _status[platformId] ?? false;
+  bool get isLoading => _isLoading;
+  bool get isAuthorizing => _isAuthorizing;
+  String? get error => _error;
 
-  /// Returns true when [platformId] is fully authorized.
-  bool isAuthorized(String platformId) =>
-      _states[platformId] == AuthorizationState.authorized;
-
-  /// Returns the last error message for [platformId], or null if none.
-  String? errorFor(String platformId) => _errors[platformId];
-
-  /// Launches the authorization flow for [platform] and updates state.
-  ///
-  /// Returns the [AuthorizationResult] so callers can inspect details if
-  /// needed, but state is also observable via [stateFor].
-  Future<AuthorizationResult> authorize(MusicPlatform platform) async {
-    _states[platform.id] = AuthorizationState.authorizing;
-    _errors.remove(platform.id);
+  /// Fetches the current authorization status from the backend.
+  Future<void> checkStatus() async {
+    _isLoading = true;
+    _error = null;
     notifyListeners();
 
     try {
-      final result = await _repository.authorize(platform);
-
-      _states[platform.id] = result.isAuthorized
-          ? AuthorizationState.authorized
-          : AuthorizationState.failed;
-
-      if (!result.isAuthorized && result.errorMessage != null) {
-        _errors[platform.id] = result.errorMessage!;
-      }
-
+      _status = await _repository.getAuthStatus();
+      String jsonStatus = jsonEncode(_status);
+      print("AAAA");
+      print(jsonStatus);
+    } catch (e) {
+      _error = e.toString();
+    } finally {
+      _isLoading = false;
       notifyListeners();
-      return result;
-    } on AuthException catch (e) {
-      _states[platform.id] = AuthorizationState.failed;
-      _errors[platform.id] = e.message;
-      notifyListeners();
-      return AuthorizationResult.failure(platform, e.message);
     }
   }
 
-  /// Revokes authorization for [platformId] and resets its state.
-  Future<void> revokeAuth(String platformId) async {
-    await _repository.revokeAuth(platformId);
-    _states.remove(platformId);
-    _errors.remove(platformId);
+  /// Launches the OAuth flow for [platformId]. Returns true on success.
+  Future<bool> authorize(String platformId) async {
+    _isAuthorizing = true;
+    _error = null;
     notifyListeners();
+    print("A VER AQUI ES DONDE SE AUTORIZA");
+    try {
+      await _repository.authorize(platformId);
+      _status[platformId] = true;
+      return true;
+    } catch (e) {
+      _error = e.toString();
+      return false;
+    } finally {
+      _isAuthorizing = false;
+      notifyListeners();
+    }
   }
 }

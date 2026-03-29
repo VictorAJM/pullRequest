@@ -22,13 +22,11 @@ class PlaylistSelectionScreen extends StatefulWidget {
 
 class _PlaylistSelectionScreenState extends State<PlaylistSelectionScreen> {
   final TextEditingController _searchController = TextEditingController();
-  List<Playlist> _filtered = [];
 
   @override
   void initState() {
     super.initState();
-    _searchController.addListener(_applyFilter);
-
+    _searchController.addListener(() => setState(() {}));
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<PlaylistProvider>().loadPlaylists(widget.platform.id);
     });
@@ -40,38 +38,10 @@ class _PlaylistSelectionScreenState extends State<PlaylistSelectionScreen> {
     super.dispose();
   }
 
-  void _applyFilter() {
-    final provider = context.read<PlaylistProvider>();
-    final all = provider.playlistsFor(widget.platform.id);
+  List<Playlist> _filterPlaylists(List<Playlist> all) {
     final query = _searchController.text.toLowerCase();
-    setState(() {
-      _filtered = query.isEmpty
-          ? all
-          : all
-              .where(
-                (p) =>
-                    p.name.toLowerCase().contains(query) ||
-                    (p.description?.toLowerCase().contains(query) ?? false),
-              )
-              .toList();
-    });
-  }
-
-  bool _areAllFilteredSelected(PlaylistProvider provider) {
-    if (_filtered.isEmpty) return false;
-    return _filtered.every((p) => provider.isSelected(p.id));
-  }
-
-  void _toggleSelectAll(PlaylistProvider provider) {
-    if (_areAllFilteredSelected(provider)) {
-      provider.deselectAll(_filtered);
-    } else {
-      provider.selectAll(_filtered);
-    }
-  }
-
-  void _handleContinue() {
-    context.pop(true);
+    if (query.isEmpty) return all;
+    return all.where((p) => p.title.toLowerCase().contains(query)).toList();
   }
 
   @override
@@ -81,20 +51,12 @@ class _PlaylistSelectionScreenState extends State<PlaylistSelectionScreen> {
         final isLoading = provider.isLoading(widget.platform.id);
         final error = provider.errorFor(widget.platform.id);
         final all = provider.playlistsFor(widget.platform.id);
-        final selectedCount = provider.selectedIds.length;
-
-        // Sync _filtered when data first loads or changes externally.
-        if (!isLoading && error == null && _filtered.isEmpty && all.isNotEmpty) {
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (mounted) _applyFilter();
-          });
-        }
-
-        final displayList = _searchController.text.isEmpty ? all : _filtered;
+        final displayList = _filterPlaylists(all);
+        final selected = provider.selectedPlaylist;
 
         return Scaffold(
           appBar: AppBar(
-            title: const Text('Select Playlists'),
+            title: const Text('Select Playlist'),
             leading: IconButton(
               icon: const Icon(Icons.arrow_back),
               onPressed: () => context.pop(false),
@@ -114,9 +76,9 @@ class _PlaylistSelectionScreenState extends State<PlaylistSelectionScreen> {
                       children: [
                         _buildHeader(all.length),
                         _buildSearchBar(),
-                        _buildSelectAllRow(provider),
-                        Expanded(child: _buildList(provider, displayList)),
-                        _buildBottomBar(selectedCount),
+                        Expanded(
+                            child: _buildList(provider, displayList)),
+                        _buildBottomBar(selected),
                       ],
                     ),
         );
@@ -128,7 +90,7 @@ class _PlaylistSelectionScreenState extends State<PlaylistSelectionScreen> {
     return ListView.builder(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       itemCount: 6,
-      itemBuilder: (_, _) => const LoadingPlaylistCard(),
+      itemBuilder: (context, index) => const LoadingPlaylistCard(),
     );
   }
 
@@ -152,7 +114,8 @@ class _PlaylistSelectionScreenState extends State<PlaylistSelectionScreen> {
               Text(widget.platform.name, style: AppTextStyles.bodyMedium),
               Text(
                 '$count playlists available',
-                style: AppTextStyles.caption.copyWith(color: Colors.grey[600]),
+                style:
+                    AppTextStyles.caption.copyWith(color: Colors.grey[600]),
               ),
             ],
           ),
@@ -168,7 +131,8 @@ class _PlaylistSelectionScreenState extends State<PlaylistSelectionScreen> {
         controller: _searchController,
         decoration: InputDecoration(
           hintText: 'Search playlists...',
-          prefixIcon: const Icon(Icons.search, color: AppColors.primaryBlue),
+          prefixIcon:
+              const Icon(Icons.search, color: AppColors.primaryBlue),
           suffixIcon: _searchController.text.isNotEmpty
               ? IconButton(
                   icon: const Icon(Icons.clear),
@@ -176,32 +140,6 @@ class _PlaylistSelectionScreenState extends State<PlaylistSelectionScreen> {
                 )
               : null,
         ),
-      ),
-    );
-  }
-
-  Widget _buildSelectAllRow(PlaylistProvider provider) {
-    final allSelected = _areAllFilteredSelected(provider);
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Row(
-        children: [
-          TextButton.icon(
-            onPressed: () => _toggleSelectAll(provider),
-            icon: Icon(
-              allSelected ? Icons.check_box : Icons.check_box_outline_blank,
-              color:
-                  allSelected ? AppColors.primaryBlue : Colors.grey[600],
-            ),
-            label: Text(
-              allSelected ? 'Deselect All' : 'Select All',
-              style: TextStyle(
-                color:
-                    allSelected ? AppColors.primaryBlue : Colors.grey[600],
-              ),
-            ),
-          ),
-        ],
       ),
     );
   }
@@ -228,16 +166,19 @@ class _PlaylistSelectionScreenState extends State<PlaylistSelectionScreen> {
       itemCount: playlists.length,
       itemBuilder: (context, index) {
         final playlist = playlists[index];
+        final isSelected = provider.selectedPlaylistId == playlist.id;
         return PlaylistCard(
           playlist: playlist,
-          isSelected: provider.isSelected(playlist.id),
-          onTap: () => provider.toggleSelection(playlist.id),
+          isSelected: isSelected,
+          onTap: () => provider.selectPlaylist(
+            isSelected ? null : playlist.id,
+          ),
         );
       },
     );
   }
 
-  Widget _buildBottomBar(int selectedCount) {
+  Widget _buildBottomBar(Playlist? selected) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -252,11 +193,11 @@ class _PlaylistSelectionScreenState extends State<PlaylistSelectionScreen> {
       ),
       child: SafeArea(
         child: ElevatedButton(
-          onPressed: selectedCount == 0 ? null : _handleContinue,
+          onPressed: selected == null ? null : () => context.pop(true),
           child: Text(
-            selectedCount == 0
-                ? 'Select Playlists'
-                : 'Continue ($selectedCount selected)',
+            selected == null
+                ? 'Select a Playlist'
+                : 'Transfer "${selected.title}"',
           ),
         ),
       ),

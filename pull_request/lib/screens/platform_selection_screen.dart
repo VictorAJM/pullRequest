@@ -3,11 +3,12 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../core/router/app_router.dart';
 import '../core/theme/app_colors.dart';
+import '../core/theme/app_text_styles.dart';
 import '../models/music_platform.dart';
 import '../providers/auth_provider.dart';
 import '../providers/playlist_provider.dart';
 import '../services/platform_service.dart';
-import '../widgets/platform_selector.dart';
+import '../widgets/platform_card.dart';
 
 class PlatformSelectionScreen extends StatefulWidget {
   const PlatformSelectionScreen({super.key});
@@ -19,112 +20,57 @@ class PlatformSelectionScreen extends StatefulWidget {
 
 class _PlatformSelectionScreenState extends State<PlatformSelectionScreen> {
   MusicPlatform? _sourcePlatform;
-  MusicPlatform? _destinationPlatform;
 
-  bool get _canProceed =>
-      _sourcePlatform != null && _destinationPlatform != null;
-
-  List<String> get _disabledSourceIds =>
-      _destinationPlatform != null ? [_destinationPlatform!.id] : [];
-
-  List<String> get _disabledDestinationIds =>
-      _sourcePlatform != null ? [_sourcePlatform!.id] : [];
-
-  void _handleSourceSelection(MusicPlatform platform) {
-    setState(() {
-      _sourcePlatform = platform;
-      if (_destinationPlatform?.id == platform.id) {
-        _destinationPlatform = null;
-      }
-    });
+  MusicPlatform? _getDestination(List<MusicPlatform> platforms) {
+    if (_sourcePlatform == null) return null;
+    return platforms.firstWhere((p) => p.id != _sourcePlatform!.id);
   }
 
-  void _handleDestinationSelection(MusicPlatform platform) {
-    setState(() {
-      _destinationPlatform = platform;
-      if (_sourcePlatform?.id == platform.id) {
-        _sourcePlatform = null;
-      }
-    });
-  }
-
-  Future<void> _handleSelectPlaylists() async {
+  Future<void> _handleContinue() async {
+    final platforms =
+        context.read<PlatformService>().getAvailablePlatforms();
+    final destination = _getDestination(platforms)!;
     final authProvider = context.read<AuthProvider>();
     final playlistProvider = context.read<PlaylistProvider>();
 
-    // Clear any selection from a previous transfer flow.
     playlistProvider.clearSelection();
 
-    // ── Authorize source ───────────────────────────────────────────────────
-    // The auth screen pops with `true` on success, `false` on cancel/failure.
-    final sourceAuthorized = await context.push<bool>(
-      AppRoutes.authorize,
-      extra: AuthorizationArgs(
-        platform: _sourcePlatform!,
-        isSource: true,
-      ),
-    );
-
+    // Fetch auth status from backend.
+    await authProvider.checkStatus();
     if (!mounted) return;
-    if (sourceAuthorized != true) {
-      _showAuthorizationError(
-        _sourcePlatform!.name,
-        authProvider.errorFor(_sourcePlatform!.id) ??
-            'Authorization was cancelled.',
+    debugPrint('Si despues de esto no se imprime nada es porque si esta autorizado');
+    // Authorize source if needed.
+    if (!authProvider.isAuthorized(_sourcePlatform!.id)) {
+      debugPrint('Esto significa que no estas autorizado');
+      final success = await context.push<bool>(
+        AppRoutes.authorize,
+        extra: _sourcePlatform!,
       );
-      return;
+      if (!mounted || success != true) return;
     }
 
-    // ── Authorize destination ──────────────────────────────────────────────
-    final destAuthorized = await context.push<bool>(
-      AppRoutes.authorize,
-      extra: AuthorizationArgs(
-        platform: _destinationPlatform!,
-        isSource: false,
-      ),
-    );
-
-    if (!mounted) return;
-    if (destAuthorized != true) {
-      _showAuthorizationError(
-        _destinationPlatform!.name,
-        authProvider.errorFor(_destinationPlatform!.id) ??
-            'Authorization was cancelled.',
+    // Authorize destination if needed.
+    if (!authProvider.isAuthorized(destination.id)) {
+      final success = await context.push<bool>(
+        AppRoutes.authorize,
+        extra: destination,
       );
-      return;
+      if (!mounted || success != true) return;
     }
 
-    // ── Select playlists ───────────────────────────────────────────────────
+    // Select playlist.
     final confirmed = await context.push<bool>(
       AppRoutes.playlistSelection,
       extra: _sourcePlatform!,
     );
+    if (!mounted || confirmed != true) return;
 
-    if (!mounted) return;
-    if (confirmed != true) return;
-
-    // ── Start transfer ─────────────────────────────────────────────────────
+    // Start transfer.
     context.push(
       AppRoutes.transfer,
       extra: TransferArgs(
         sourcePlatform: _sourcePlatform!,
-        destinationPlatform: _destinationPlatform!,
-      ),
-    );
-  }
-
-  void _showAuthorizationError(String platformName, String message) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Authorization Failed'),
-        content: Text('Could not authorize $platformName: $message'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('OK'),
-          ),
-        ],
+        destinationPlatform: destination,
       ),
     );
   }
@@ -133,6 +79,7 @@ class _PlatformSelectionScreenState extends State<PlatformSelectionScreen> {
   Widget build(BuildContext context) {
     final platforms =
         context.read<PlatformService>().getAvailablePlatforms();
+    final destination = _getDestination(platforms);
 
     return Scaffold(
       appBar: AppBar(
@@ -146,34 +93,60 @@ class _PlatformSelectionScreenState extends State<PlatformSelectionScreen> {
         child: Padding(
           padding: const EdgeInsets.all(24.0),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              PlatformSelector(
-                title: 'FROM (Source)',
-                selectedPlatform: _sourcePlatform,
-                availablePlatforms: platforms,
-                disabledPlatformIds: _disabledSourceIds,
-                onPlatformSelected: _handleSourceSelection,
-                onClear: () => setState(() => _sourcePlatform = null),
+              const Text(
+                'Where are your playlists?',
+                style: AppTextStyles.heading2,
               ),
-              const SizedBox(height: 24),
-              const Icon(
-                Icons.arrow_downward,
-                size: 32,
-                color: AppColors.darkBlue,
+              const SizedBox(height: 8),
+              Text(
+                'Select the platform you want to transfer from.',
+                style: AppTextStyles.body.copyWith(color: Colors.grey[600]),
               ),
-              const SizedBox(height: 24),
-              PlatformSelector(
-                title: 'TO (Destination)',
-                selectedPlatform: _destinationPlatform,
-                availablePlatforms: platforms,
-                disabledPlatformIds: _disabledDestinationIds,
-                onPlatformSelected: _handleDestinationSelection,
-                onClear: () => setState(() => _destinationPlatform = null),
-              ),
+              const SizedBox(height: 32),
+              ...platforms.map((platform) {
+                final isSelected = _sourcePlatform?.id == platform.id;
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: PlatformCard(
+                    platform: platform,
+                    isSelected: isSelected,
+                    onTap: () => setState(() => _sourcePlatform = platform),
+                  ),
+                );
+              }),
+              if (_sourcePlatform != null && destination != null) ...[
+                const SizedBox(height: 24),
+                Center(
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Image.asset(_sourcePlatform!.iconPath,
+                          width: 32, height: 32),
+                      const SizedBox(width: 12),
+                      const Icon(Icons.arrow_forward,
+                          color: AppColors.primaryBlue),
+                      const SizedBox(width: 12),
+                      Image.asset(destination.iconPath,
+                          width: 32, height: 32),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Center(
+                  child: Text(
+                    '${_sourcePlatform!.name} to ${destination.name}',
+                    style: AppTextStyles.label
+                        .copyWith(color: Colors.grey[600]),
+                  ),
+                ),
+              ],
               const Spacer(),
               ElevatedButton(
-                onPressed: _canProceed ? _handleSelectPlaylists : null,
-                child: const Text('Select Playlists'),
+                onPressed:
+                    _sourcePlatform != null ? _handleContinue : null,
+                child: const Text('Continue'),
               ),
             ],
           ),

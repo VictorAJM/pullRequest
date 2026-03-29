@@ -2,63 +2,33 @@ class Song {
   final String id;
   final String title;
   final String artist;
-  final String? album;
-  final int durationSeconds;
+  final String? imageUrl;
 
   const Song({
     required this.id,
     required this.title,
     required this.artist,
-    this.album,
-    required this.durationSeconds,
+    this.imageUrl,
   });
 
   factory Song.fromJson(Map<String, dynamic> json) {
+    final thumbnail = json['thumbnail'];
     return Song(
       id: json['id'] as String,
       title: json['title'] as String,
       artist: json['artist'] as String,
-      album: json['album'] as String?,
-      durationSeconds: json['durationSeconds'] as int,
+      imageUrl: thumbnail is Map ? thumbnail['url'] as String? : null,
     );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'title': title,
-      'artist': artist,
-      'album': album,
-      'durationSeconds': durationSeconds,
-    };
-  }
-
-  String get formattedDuration {
-    final minutes = durationSeconds ~/ 60;
-    final seconds = durationSeconds % 60;
-    return '$minutes:${seconds.toString().padLeft(2, '0')}';
   }
 
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is Song &&
-          runtimeType == other.runtimeType &&
-          id == other.id &&
-          title == other.title &&
-          artist == other.artist &&
-          album == other.album &&
-          durationSeconds == other.durationSeconds;
+      other is Song && runtimeType == other.runtimeType && id == other.id;
 
   @override
-  int get hashCode =>
-      id.hashCode ^
-      title.hashCode ^
-      artist.hashCode ^
-      album.hashCode ^
-      durationSeconds.hashCode;
+  int get hashCode => id.hashCode;
 
   @override
-  String toString() =>
-      'Song(id: $id, title: $title, artist: $artist, duration: $formattedDuration)';
+  String toString() => 'Song(id: $id, title: $title, artist: $artist)';
 }

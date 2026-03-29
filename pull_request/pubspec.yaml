@@ -11,8 +11,6 @@ dependencies:
   flutter:
     sdk: flutter
 
-  cupertino_icons: ^1.0.8
-
   # State management
   provider: ^6.1.2
 
@@ -22,14 +20,14 @@ dependencies:
   # OAuth browser launch + custom-scheme redirect interception
   flutter_web_auth_2: ^4.0.1
 
-  # Encrypted token persistence (access + refresh tokens)
+  # Encrypted key/token persistence
   flutter_secure_storage: ^9.2.2
 
-  # HTTP client for token exchange and refresh grant calls
+  # HTTP client for backend API calls
   http: ^1.2.0
 
-  # SHA-256 for PKCE code challenge generation
-  crypto: ^3.0.3
+  # RSA keypair generation and signing for device authentication
+  fast_rsa: ^3.6.2
 
 dev_dependencies:
   flutter_test:
@@ -43,5 +41,3 @@ flutter:
   assets:
     - assets/icons/spotify_icon.png
     - assets/icons/youtube_music_icon.png
-    - assets/data/spotify_playlists.json
-    - assets/data/youtube_music_playlists.json

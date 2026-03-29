@@ -2,31 +2,34 @@ import { createYouTubeClient, getAllPlaylistItems as getAllYoutubePlaylistItems 
 import { createSpotifyClient, getAllPlaylistItems as getAllSpotifyPlaylistImtes, createNewPlaylist, addItemsToPlaylist } from '@services/spotify_api_client';
 import { youtube_v3 } from 'googleapis';
 import { translateTrack } from '@lib/track_translate';
+import { PlaylistItem } from '@lib/custom_types';
 
 const ctx: Worker = self as any;
 
 ctx.onmessage = async (event: MessageEvent) => {
   const { deviceId, playlistId, platformFrom } = event.data;
 
-  const playlistItems = (platformFrom === 'ytm' ?
-    await getAllYoutubePlaylistItems(deviceId, playlistId) :
-    await getAllSpotifyPlaylistImtes(deviceId, playlistId));
+  console.log('Starting playlist transfer...');
 
-  if (!playlistItems) {
-    ctx.postMessage({ status: 'error' });
-    throw new Error("Failed to get playlist items.");
-  }
+  try {
+    const playlistItems = (platformFrom === 'ytm' ?
+      await getAllYoutubePlaylistItems(deviceId, playlistId) :
+      await getAllSpotifyPlaylistImtes(deviceId, playlistId));
 
-  const youtubeClient = await createYouTubeClient(deviceId);
-  let spotifyClient = await createSpotifyClient(deviceId);
+    if (!playlistItems) {
+      ctx.postMessage({ status: 'error' });
+      throw new Error("Failed to get playlist items.");
+    }
 
-  if (!youtubeClient)
-    throw Error("Failed to connect to Google API.");
-  if (!spotifyClient)
-    throw Error("Failed to connect to Spotify API.");
+    const youtubeClient = await createYouTubeClient(deviceId);
+    let spotifyClient = await createSpotifyClient(deviceId);
 
-  if (platformFrom === 'ytm') {
-    try {
+    if (!youtubeClient)
+      throw Error("Failed to connect to Google API.");
+    if (!spotifyClient)
+      throw Error("Failed to connect to Spotify API.");
+
+    if (platformFrom === 'ytm') {
       console.log('getting ytm playlist data...');
       const detailsResponse = await youtubeClient.playlists.list({
         part: ['snippet'],
@@ -47,7 +50,8 @@ ctx.onmessage = async (event: MessageEvent) => {
         playlistId
       );
 
-      let currentItem = 0;
+      let currentItem = 1;
+      const failedItems: PlaylistItem[] = [];
 
       for (const batch of chunkGenerator(playlistItems, 100)) {
         const spotifyTracks: string[] = [];
@@ -62,6 +66,8 @@ ctx.onmessage = async (event: MessageEvent) => {
 
           if (translated.id !== 'Not Found :(')
             spotifyTracks.push(`spotify:track:${translated.id}`);
+          else
+            failedItems.push(track);
           currentItem++;
         }
 
@@ -76,13 +82,12 @@ ctx.onmessage = async (event: MessageEvent) => {
         }
       }
 
-      ctx.postMessage({ status: 'completed' });
-    } catch (error) {
-      console.log("Oh fuckyy: ", error);
-      ctx.postMessage({ status: "error" });
-    }
-  } else {
-    try {
+      ctx.postMessage({
+        status: 'completed',
+        totalItems: playlistItems.length,
+        failedItems
+      });
+    } else {
       const response = await spotifyClient.playlists.getPlaylist(
         playlistId, undefined, 'name'
       );
@@ -94,7 +99,8 @@ ctx.onmessage = async (event: MessageEvent) => {
         playlistId
       );
 
-      var currentItem = 0;
+      var currentItem = 1;
+      const failedItems: PlaylistItem[] = [];
 
       for (const track of playlistItems) {
         ctx.postMessage({
@@ -106,7 +112,7 @@ ctx.onmessage = async (event: MessageEvent) => {
         const translated = await translateTrack(track, 'ytm');
 
         if (translated.id === "Not Found :(") {
-          console.log('Track not found :(');
+          failedItems.push(track);
           continue;
         }
 
@@ -126,11 +132,15 @@ ctx.onmessage = async (event: MessageEvent) => {
         currentItem++;
         await Bun.sleep(250);
       }
-      ctx.postMessage({ status: 'completed', totalItems: playlistItems.length });
-    } catch (error) {
-      console.log("Oh fuckyy: ", error);
-      ctx.postMessage({ status: "error" });
+      ctx.postMessage({
+        status: 'completed',
+        totalItems: playlistItems.length,
+        failedItems
+      });
     }
+  } catch (error) {
+    console.log("Oh fuckyy: ", error);
+    ctx.postMessage({ status: "error" });
   }
 };
 

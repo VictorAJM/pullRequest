@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
 import '../repositories/auth_repository.dart';
-import 'dart:convert';
+
 /// Manages OAuth authorization state for all music platforms.
 ///
 /// Screens check status via [isAuthorized] and trigger flows via
@@ -29,9 +29,6 @@ class AuthProvider extends ChangeNotifier {
 
     try {
       _status = await _repository.getAuthStatus();
-      String jsonStatus = jsonEncode(_status);
-      print("AAAA");
-      print(jsonStatus);
     } catch (e) {
       _error = e.toString();
     } finally {
@@ -45,7 +42,7 @@ class AuthProvider extends ChangeNotifier {
     _isAuthorizing = true;
     _error = null;
     notifyListeners();
-    print("A VER AQUI ES DONDE SE AUTORIZA");
+
     try {
       await _repository.authorize(platformId);
       _status[platformId] = true;

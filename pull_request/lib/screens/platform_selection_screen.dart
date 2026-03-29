@@ -38,10 +38,8 @@ class _PlatformSelectionScreenState extends State<PlatformSelectionScreen> {
     // Fetch auth status from backend.
     await authProvider.checkStatus();
     if (!mounted) return;
-    debugPrint('Si despues de esto no se imprime nada es porque si esta autorizado');
     // Authorize source if needed.
     if (!authProvider.isAuthorized(_sourcePlatform!.id)) {
-      debugPrint('Esto significa que no estas autorizado');
       final success = await context.push<bool>(
         AppRoutes.authorize,
         extra: _sourcePlatform!,

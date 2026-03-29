@@ -47,7 +47,6 @@ export const oauthRoute = new Elysia({ prefix: 'oauth' })
     if (platform === 'ytm') {
       const authData = await getYoutubeAccessTokenFromCode(code);
       if (!authData) {
-        console.log('Oh fucky :(');
         return status(500, "Failed to exange Youtube code.");
       }
 

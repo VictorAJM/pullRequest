@@ -28,8 +28,6 @@ class BackendAuthService implements AuthRepository {
       throw AuthException('No authorization code received');
     }
 
-    print("}}}}");
-
     // Send code to backend for token exchange.
     final response = await _api.post('/oauth/register_code', body: {
       'platform': platformId,

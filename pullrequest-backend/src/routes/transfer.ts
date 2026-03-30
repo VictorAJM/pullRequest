@@ -20,6 +20,14 @@ export const playlistTransferRoutes = new Elysia({ prefix: '/transfer' })
     }
 
     const worker = new Worker('./src/services/transferWorker.ts');
+
+    activeTransfers.set(deviceId, {
+      status: 'in_progress',
+      currentSong: '',
+      totalItems: 0,
+      currentItem: 0,
+    });
+
     worker.onmessage = (event) => {
       const { status } = event.data;
 
@@ -77,7 +85,7 @@ export const playlistTransferRoutes = new Elysia({ prefix: '/transfer' })
             resolve(data);
           };
 
-          sseBus.once(`update:${deviceId}`, resolve);
+          sseBus.once(`update:${deviceId}`, listener);
 
           const checkInterval = setInterval(() => {
             if (!activeTransfers.has(deviceId)) {

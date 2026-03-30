@@ -1,5 +1,6 @@
 import { Database } from "bun:sqlite";
-import { Platform, AuthData } from "@lib/custom_types";
+import { Platform, AuthData, PlaylistItem } from "@lib/custom_types";
+import { snapshot } from "node:test";
 
 export const db = new Database("mydb.sqlite");
 db.run(`
@@ -12,6 +13,16 @@ db.run(`
     spotify_oauth_token TEXT,
     spotify_refresh_token TEXT,
     spotify_expires_at INTEGER
+)`);
+
+db.run(`
+  CREATE TABLE IF NOT EXISTS playlist_cache (
+    playlist_id TEXT NOT NULL,
+    device_id TEXT NOT NULL,
+    platform TEXT NOT NULL,
+    snapshot_id TEXT,
+    data TEXT,
+    PRIMARY KEY (playlist_id, device_id, platform)
 )`);
 
 export function getOauthTokens(deviceId: string, platform: Platform): {
@@ -58,5 +69,73 @@ export function saveAccessTokens(
     $refresh_token: authData.refreshToken,
     $expiry_date: authData.expiresAt,
     $device_id: deviceId
+  });
+}
+
+export function getCachedPlaylist(
+  playlistId: string,
+  platform: Platform,
+  deviceId: string
+) {
+  const result = db.prepare(`
+          SELECT
+            snapshot_id,
+            data
+          FROM playlist_cache 
+          WHERE
+            playlist_id = $playlistId AND
+            device_id = $deviceId AND
+            platform = $platform
+        `).get({
+    $deviceId: deviceId,
+    $playlistId: playlistId,
+    $platform: platform
+  }) as { snapshot_id: string, data: string } | undefined;
+
+  if (!result) return null;
+
+  try {
+    return {
+      snapshot: result.snapshot_id,
+      data: JSON.parse(result.data)
+    };
+  } catch (error) {
+    return null;
+  }
+}
+
+export function savePlaylistCache(
+  playlistId: string,
+  platform: Platform,
+  deviceId: string,
+  data: PlaylistItem[],
+  snapshot: string
+) {
+  const upsertPlaylist = db.prepare(`
+  INSERT INTO playlist_cache (
+    playlist_id, 
+    platform, 
+    device_id, 
+    data, 
+    snapshot_id
+  ) 
+  VALUES (
+    $playlistId, 
+    $platform, 
+    $deviceId, 
+    $data, 
+    $snapshot
+  )
+  ON CONFLICT(playlist_id, platform, device_id) DO UPDATE SET
+    data = excluded.data,
+    snapshot_id = excluded.snapshot_id
+`);
+
+  upsertPlaylist.run({
+    $playlistId: playlistId,
+    $platform: platform,
+    $deviceId: deviceId,
+    $data: JSON.stringify(data),
+    $snapshot: snapshot
   });
 }

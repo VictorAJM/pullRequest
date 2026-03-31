@@ -113,24 +113,15 @@ ctx.onmessage = async (event: MessageEvent) => {
 
         if (translated.id === "Not Found :(") {
           failedItems.push(track);
+          currentItem++;
           continue;
         }
 
-        const response = await youtubeClient.playlistItems.insert({
-          part: ['snippet'],
-          requestBody: {
-            snippet: {
-              playlistId: newPlaylistId,
-              resourceId: {
-                kind: 'youtube#video',
-                videoId: translated.id
-              }
-            }
-          }
-        });
+        const success = await insertWithRetry(youtubeClient, newPlaylistId, translated.id);
+        if (!success) failedItems.push(track);
 
         currentItem++;
-        await Bun.sleep(250);
+        await Bun.sleep(350);
       }
       ctx.postMessage({
         status: 'completed',
@@ -143,6 +134,37 @@ ctx.onmessage = async (event: MessageEvent) => {
     ctx.postMessage({ status: "error" });
   }
 };
+
+async function insertWithRetry(
+  client: youtube_v3.Youtube,
+  playlistId: string,
+  videoId: string,
+  retries = 3
+): Promise<boolean> {
+  for (let attempt = 0; attempt < retries; attempt++) {
+    try {
+      await client.playlistItems.insert({
+        part: ['snippet'],
+        requestBody: {
+          snippet: {
+            playlistId,
+            resourceId: {
+              kind: 'youtube#video',
+              videoId
+            }
+          }
+        }
+      });
+      return true;
+    } catch (err: any) {
+      if (err?.status === 409) return true; // duplicate, not a failure
+      if (attempt < retries - 1) {
+        await Bun.sleep(1000 * (attempt + 1)); // 1s, 2s, 3s
+      }
+    }
+  }
+  return false;
+}
 
 async function createYoutubePlaylist(
   client: youtube_v3.Youtube,

@@ -165,7 +165,6 @@ export async function getPlaylistItems(
   }
 
   const url = `https://api.spotify.com/v1/playlists/${playlistId}/items?limit=${limit}&offset=${offset}`;
-  console.log(`[spotify/items] GET ${url}`);
 
   const res = await fetch(url, {
     headers: { Authorization: `Bearer ${oauth_token}` }
@@ -187,8 +186,6 @@ export async function getPlaylistItems(
 
   const data = await res.json();
   const filteredData = SpotifyPlaylistItemsSchema.parse(data);
-
-  console.log(`[spotify/items] Got ${filteredData.items.length} items, total=${filteredData.total}`);
 
   return {
     items: filteredData.items.map(item => ({
@@ -225,12 +222,10 @@ export async function createNewPlaylist(
   });
 
   const playlist = await res.json();
-  console.log(`[spotify/create] Response:`, playlist);
 
   if (!playlist.id)
     throw new Error("Failed to create Spotify Playlist :(");
 
-  console.log(`[spotify/create] Created playlist with id=${playlist.id}`);
   return playlist.id;
 }
 
@@ -253,7 +248,6 @@ export async function addItemsToPlaylist(
     body: JSON.stringify({ uris }),
   });
 
-  console.log(`[spotify/add] Response status: ${res.status}`);
   return res;
 }
 
@@ -270,7 +264,6 @@ export async function getAllPlaylistItems(deviceId: string, playlistId: string):
   const contents: PlaylistItem[] = [];
 
   while (true) {
-    console.log(`[spotify/allItems] Batch fetch: offset=${offset}`);
     const response = await getPlaylistItems(playlistId, deviceId, 100, offset);
 
     if (!response) {
@@ -279,13 +272,11 @@ export async function getAllPlaylistItems(deviceId: string, playlistId: string):
     }
 
     contents.push(...response.items);
-    console.log(`[spotify/allItems] Accumulated ${contents.length} items`);
 
     if (response.next) {
       offset += 100;
     } else break;
   }
 
-  console.log(`[spotify/allItems] Done. Total: ${contents.length} items`);
   return contents;
 }

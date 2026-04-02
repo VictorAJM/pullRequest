@@ -30,7 +30,6 @@ ctx.onmessage = async (event: MessageEvent) => {
       throw Error("Failed to connect to Spotify API.");
 
     if (platformFrom === 'ytm') {
-      console.log('getting ytm playlist data...');
       const detailsResponse = await youtubeClient.playlists.list({
         part: ['snippet'],
         id: [playlistId]
@@ -43,7 +42,6 @@ ctx.onmessage = async (event: MessageEvent) => {
       }
 
       const playlistName = items[0].snippet.title;
-      console.log('creating new spotify playlist...');
       const newPlaylistId = await createSpotifyPlaylist(
         deviceId,
         playlistName,

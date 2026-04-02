@@ -72,12 +72,13 @@ export const playlistsRoutes = new Elysia({ prefix: 'playlists' })
           return status(401, 'User not authenticated with Spotify');
         }
 
+        const profile = await spotify.currentUser.profile();
+        const userId = profile.id;
+
         let offset = 0;
         const playlists: SimplifiedPlaylist[] = [];
 
         while (true) {
-          console.log(`[playlists/list] Spotify: fetching offset=${offset}...`);
-
           const response = await spotify.currentUser.playlists.playlists(50, offset);
           playlists.push(...response.items);
 
@@ -86,15 +87,15 @@ export const playlistsRoutes = new Elysia({ prefix: 'playlists' })
           } else break;
         }
 
-        console.log(`[playlists/list] Spotify: fetched ${playlists.length} playlists total`);
-
-        const filteredPlaylists: Playlist[] = playlists.map(playlist => ({
-          platform: 'spotify',
-          id: playlist.id,
-          title: playlist.name,
-          itemCount: playlist.items.total,
-          thumbnail: playlist.images[0]
-        }));
+        const filteredPlaylists: Playlist[] = playlists
+          .filter(playlist => playlist.owner.id === userId)
+          .map(playlist => ({
+            platform: 'spotify',
+            id: playlist.id,
+            title: playlist.name,
+            itemCount: playlist.items.total,
+            thumbnail: playlist.images[0]
+          }));
 
         return filteredPlaylists;
       }

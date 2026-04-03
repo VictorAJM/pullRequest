@@ -1,8 +1,22 @@
 import { Platform, PlaylistItem, Track } from "@lib/custom_types";
 import spotify from "@services/spotify_service";
 import YTMusic from "ytmusic-api";
+// @ts-ignore
+import { HttpsProxyAgent } from 'https-proxy-agent';
 
 const ytm = new YTMusic();
+
+if (process.env.YTM_PROXY) {
+    try {
+        const httpsAgent = new HttpsProxyAgent(process.env.YTM_PROXY);
+        (ytm as any).client.defaults.proxy = false; // Disable axios native proxy
+        (ytm as any).client.defaults.httpsAgent = httpsAgent;
+        console.log("[YTMusic] Using custom proxy for YTMusic requests via HttpsProxyAgent.");
+    } catch (e) {
+        console.error("[YTMusic] Failed to parse/setup YTM_PROXY URL", e);
+    }
+}
+
 await ytm.initialize();
 
 export async function translateTrack(track: PlaylistItem, platform?: Platform):

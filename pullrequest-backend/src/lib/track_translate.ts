@@ -20,11 +20,10 @@ export async function translateTrack(track: PlaylistItem, platform?: Platform):
 
 async function ytmSearch(track: PlaylistItem): Promise<PlaylistItem> {
     try {
-        // Add timeout to prevent indefinite hanging (tarpitting)
         const res = await Promise.race([
             ytm.searchSongs(`${track.title} ${track.artist}`),
-            new Promise<any[]>((_, reject) => 
-                setTimeout(() => reject(new Error('YTM Search Timeout')), 8000)
+            new Promise<any[]>((_, reject) =>
+                setTimeout(() => reject(new Error('YTM Search Timeout')), 1000)
             )
         ]);
 
@@ -32,7 +31,38 @@ async function ytmSearch(track: PlaylistItem): Promise<PlaylistItem> {
             return { ...track, platform: "ytm", id: res[0].videoId }
         }
     } catch (err) {
-        console.error(`YTM Search failed/timed out for: ${track.title} - ${err}`);
+        console.warn(`YTM API failed for "${track.title}", falling back to Piped...`);
+
+        // --- PIPED FALLBACK ---
+        try {
+            const query = encodeURIComponent(`${track.title} ${track.artist}`);
+            const pipedRes = await fetch(
+                `https://pipedapi.kavin.rocks/search?q=${query}&filter=music_songs`
+            );
+
+            if (!pipedRes.ok) throw new Error(`Piped returned status ${pipedRes.status}`);
+
+            const data = await pipedRes.json();
+            if (data.items && data.items.length > 0) {
+                const item = data.items[0];
+                const url = item.url || "";
+                let videoId = "";
+
+                if (url.includes("?v=")) {
+                    videoId = url.split("?v=")[1];
+                } else if (url.includes("/watch/")) {
+                    videoId = url.replace("/watch/", "");
+                }
+
+                videoId = videoId.split("&")[0];
+
+                if (videoId) {
+                    return { ...track, platform: "ytm", id: videoId };
+                }
+            }
+        } catch (pipedErr) {
+            console.error(`Piped fallback failed for "${track.title}" - ${pipedErr}`);
+        }
     }
 
     return { ...track, platform: "ytm", id: "Not Found :(" };

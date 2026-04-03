@@ -33,35 +33,28 @@ async function ytmSearch(track: PlaylistItem): Promise<PlaylistItem> {
     } catch (err) {
         console.warn(`YTM API failed for "${track.title}", falling back to Piped...`);
 
-        // --- PIPED FALLBACK ---
+        // --- INVIDIOUS FALLBACK ---
         try {
-            const query = encodeURIComponent(`${track.title} ${track.artist}`);
-            const pipedRes = await fetch(
-                `https://pipedapi.kavin.rocks/search?q=${query}&filter=music_songs`
+            const query = encodeURIComponent(`${track.title} ${track.artist} song`);
+
+            const invRes = await fetch(
+                `https://yewtu.be/api/v1/search?q=${query}`
             );
 
-            if (!pipedRes.ok) throw new Error(`Piped returned status ${pipedRes.status}`);
+            if (!invRes.ok) throw new Error(`Invidious returned status ${invRes.status}`);
 
-            const data = await pipedRes.json();
-            if (data.items && data.items.length > 0) {
-                const item = data.items[0];
-                const url = item.url || "";
-                let videoId = "";
+            const data = await invRes.json();
 
-                if (url.includes("?v=")) {
-                    videoId = url.split("?v=")[1];
-                } else if (url.includes("/watch/")) {
-                    videoId = url.replace("/watch/", "");
-                }
-
-                videoId = videoId.split("&")[0];
+            if (Array.isArray(data) && data.length > 0) {
+                const item = data.find((i: any) => i.type === 'video') || data[0];
+                const videoId = item?.videoId;
 
                 if (videoId) {
                     return { ...track, platform: "ytm", id: videoId };
                 }
             }
-        } catch (pipedErr) {
-            console.error(`Piped fallback failed for "${track.title}" - ${pipedErr}`);
+        } catch (invErr) {
+            console.error(`Invidious fallback failed for "${track.title}" - ${invErr}`);
         }
     }
 

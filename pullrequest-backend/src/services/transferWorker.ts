@@ -119,7 +119,7 @@ ctx.onmessage = async (event: MessageEvent) => {
         if (!success) failedItems.push(track);
 
         currentItem++;
-        await Bun.sleep(750); // Lowered sleep to 750ms for faster overall speed
+        await Bun.sleep(350);
       }
       ctx.postMessage({
         status: 'completed',

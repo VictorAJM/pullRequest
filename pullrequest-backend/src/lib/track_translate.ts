@@ -23,7 +23,7 @@ async function ytmSearch(track: PlaylistItem): Promise<PlaylistItem> {
         const res = await Promise.race([
             ytm.searchSongs(`${track.title} ${track.artist}`),
             new Promise<any[]>((_, reject) =>
-                setTimeout(() => reject(new Error('YTM Search Timeout')), 1000)
+                setTimeout(() => reject(new Error('YTM Search Timeout')), 1500)
             )
         ]);
 
@@ -31,31 +31,7 @@ async function ytmSearch(track: PlaylistItem): Promise<PlaylistItem> {
             return { ...track, platform: "ytm", id: res[0].videoId }
         }
     } catch (err) {
-        console.warn(`YTM API failed for "${track.title}", falling back to Piped...`);
-
-        // --- INVIDIOUS FALLBACK ---
-        try {
-            const query = encodeURIComponent(`${track.title} ${track.artist} song`);
-
-            const invRes = await fetch(
-                `https://yewtu.be/api/v1/search?q=${query}`
-            );
-
-            if (!invRes.ok) throw new Error(`Invidious returned status ${invRes.status}`);
-
-            const data = await invRes.json();
-
-            if (Array.isArray(data) && data.length > 0) {
-                const item = data.find((i: any) => i.type === 'video') || data[0];
-                const videoId = item?.videoId;
-
-                if (videoId) {
-                    return { ...track, platform: "ytm", id: videoId };
-                }
-            }
-        } catch (invErr) {
-            console.error(`Invidious fallback failed for "${track.title}" - ${invErr}`);
-        }
+        console.error(`YTM Search failed/timed out for: ${track.title} - ${err}`);
     }
 
     return { ...track, platform: "ytm", id: "Not Found :(" };

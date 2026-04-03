@@ -19,11 +19,20 @@ export async function translateTrack(track: PlaylistItem, platform?: Platform):
 }
 
 async function ytmSearch(track: PlaylistItem): Promise<PlaylistItem> {
-    const res = await ytm.searchSongs(
-        `${track.title} ${track.artist}`);
+    try {
+        // Add timeout to prevent indefinite hanging (tarpitting)
+        const res = await Promise.race([
+            ytm.searchSongs(`${track.title} ${track.artist}`),
+            new Promise<any[]>((_, reject) => 
+                setTimeout(() => reject(new Error('YTM Search Timeout')), 8000)
+            )
+        ]);
 
-    if (res.length > 0) {
-        return { ...track, platform: "ytm", id: res[0].videoId }
+        if (res.length > 0) {
+            return { ...track, platform: "ytm", id: res[0].videoId }
+        }
+    } catch (err) {
+        console.error(`YTM Search failed/timed out for: ${track.title} - ${err}`);
     }
 
     return { ...track, platform: "ytm", id: "Not Found :(" };

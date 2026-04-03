@@ -119,7 +119,7 @@ ctx.onmessage = async (event: MessageEvent) => {
         if (!success) failedItems.push(track);
 
         currentItem++;
-        await Bun.sleep(350);
+        await Bun.sleep(2000); // Increased from 350 to 2000 to avoid VPS API IP tarpitting/throttling
       }
       ctx.postMessage({
         status: 'completed',

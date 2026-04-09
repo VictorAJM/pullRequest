@@ -89,5 +89,7 @@ export interface transferUpdateMessage {
     totalItems: number | undefined,
     currentItem: number | undefined,
     current_song: string | undefined,
+    current_thumbnail?: string,
+    platformFrom?: Platform,
     failedItems?: PlaylistItem[]
 }

@@ -5,8 +5,43 @@ import '../core/router/app_router.dart';
 import '../core/theme/app_text_styles.dart';
 import '../services/platform_service.dart';
 
-class HomeScreen extends StatelessWidget {
+import '../providers/transfer_provider.dart';
+
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final transferProvider = context.read<TransferProvider>();
+      final platformService = context.read<PlatformService>();
+      
+      final resumed = await transferProvider.checkAndResumeActiveTransfer();
+      if (resumed && mounted) {
+        final platformFrom = transferProvider.progress?.platformFrom;
+        final sourceId = platformFrom ?? 'ytm';
+        final destId = sourceId == 'ytm' ? 'spotify' : 'ytm';
+        
+        try {
+          final source = platformService.getAvailablePlatforms().firstWhere((p) => p.id == sourceId);
+          final dest = platformService.getAvailablePlatforms().firstWhere((p) => p.id == destId);
+          
+          context.go(AppRoutes.transfer, extra: TransferArgs(
+            sourcePlatform: source,
+            destinationPlatform: dest,
+          ));
+        } catch (e) {
+          // If platforms are not found, do nothing or show error
+        }
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {

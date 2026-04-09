@@ -61,6 +61,43 @@ class TransferProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<bool> checkAndResumeActiveTransfer() async {
+    final controller = StreamController<bool>();
+    
+    _reset();
+    
+    try {
+      _subscription = _repository.resumeTransfer().listen(
+        (progress) {
+          _progress = progress;
+          if (!controller.isClosed) {
+            controller.add(true); 
+            controller.close();
+          }
+          if (progress.status == 'completed' || progress.status == 'error') {
+            _isCompleted = true;
+            if (progress.status == 'error') {
+              _error = 'Transfer failed';
+            }
+          }
+          notifyListeners();
+        },
+        onError: (Object e) {
+          if (!controller.isClosed) {
+            controller.add(false);
+            controller.close();
+          }
+          _error = null; // Don't show error for 404
+          notifyListeners();
+        },
+      );
+      
+      return await controller.stream.first;
+    } catch (e) {
+      return false;
+    }
+  }
+
   void _reset() {
     _subscription?.cancel();
     _subscription = null;

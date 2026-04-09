@@ -62,4 +62,35 @@ class BackendTransferService implements TransferRepository {
       }
     }
   }
+
+  @override
+  Stream<TransferProgress> resumeTransfer() async* {
+    final sseResponse = await _api.getStream('/transfer/updates');
+
+    if (sseResponse.statusCode != 200) {
+      throw TransferException('No active transfer');
+    }
+
+    await for (final line in sseResponse.stream
+        .transform(utf8.decoder)
+        .transform(const LineSplitter())) {
+      final trimmed = line.trim();
+      if (!trimmed.startsWith('data: ')) continue;
+
+      final jsonStr = trimmed.substring(6).trim();
+      if (jsonStr.isEmpty) continue;
+
+      try {
+        final data = jsonDecode(jsonStr) as Map<String, dynamic>;
+        final progress = TransferProgress.fromJson(data);
+        yield progress;
+
+        if (progress.status == 'completed' || progress.status == 'error') {
+          return;
+        }
+      } catch (e) {
+        throw TransferException('Failed to parse update (length: ${jsonStr.length}): $e');
+      }
+    }
+  }
 }

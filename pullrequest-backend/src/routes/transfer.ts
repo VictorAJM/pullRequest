@@ -26,6 +26,7 @@ export const playlistTransferRoutes = new Elysia({ prefix: '/transfer' })
       current_song: '',
       totalItems: 0,
       currentItem: 0,
+      platformFrom: platform_from
     });
 
     worker.onmessage = (event) => {

@@ -30,7 +30,10 @@ class _PlaylistTransferScreenState extends State<PlaylistTransferScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      _startTransfer();
+      final provider = context.read<TransferProvider>();
+      if (!provider.isTransferring && !provider.isCompleted && !provider.hasError) {
+        _startTransfer();
+      }
     });
   }
 
@@ -223,20 +226,49 @@ class _PlaylistTransferScreenState extends State<PlaylistTransferScreen> {
 
     return Column(
       children: [
-        if (progress?.currentSong != null)
+        if (progress?.currentThumbnail != null)
+          ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: Image.network(
+              progress!.currentThumbnail!,
+              width: 80,
+              height: 80,
+              fit: BoxFit.cover,
+            ),
+          ),
+        if (progress?.currentThumbnail != null)
+          const SizedBox(height: 16),
+        if (progress?.currentSong != null && progress!.currentSong!.isNotEmpty) ...[
+          const Text(
+            'Transferring:',
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+              color: Colors.black54,
+            ),
+          ),
+          const SizedBox(height: 4),
           Text(
-            'Searching: "${progress!.currentSong}"',
-            style:
-                AppTextStyles.caption.copyWith(color: Colors.grey[600]),
+            progress.currentSong!,
+            style: const TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: Colors.black87,
+            ),
             textAlign: TextAlign.center,
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
           ),
-        const SizedBox(height: 8),
+        ],
+        const SizedBox(height: 24),
         if (progress != null)
           Text(
             '${progress.currentItem} of ${progress.totalItems} songs',
-            style: AppTextStyles.label.copyWith(color: Colors.grey[600]),
+            style: AppTextStyles.label.copyWith(
+              color: Colors.black87, 
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+            ),
           ),
         const SizedBox(height: 16),
         Text(

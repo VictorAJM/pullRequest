@@ -11,4 +11,8 @@ abstract class TransferRepository {
     String playlistId,
     String sourcePlatformId,
   );
+
+  /// Attaches to an active transfer for the current device and streams progress.
+  /// If no transfer is active, it throws or yields nothing.
+  Stream<TransferProgress> resumeTransfer();
 }

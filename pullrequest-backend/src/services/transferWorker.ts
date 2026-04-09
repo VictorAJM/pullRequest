@@ -57,6 +57,8 @@ ctx.onmessage = async (event: MessageEvent) => {
           ctx.postMessage({
             status: 'in_progress',
             current_song: track.title,
+            current_thumbnail: track.thumbnail?.url,
+            platformFrom,
             totalItems: playlistItems.length,
             currentItem
           });
@@ -104,6 +106,8 @@ ctx.onmessage = async (event: MessageEvent) => {
         ctx.postMessage({
           status: 'in_progress',
           current_song: track.title,
+          current_thumbnail: track.thumbnail?.url,
+          platformFrom,
           totalItems: playlistItems.length,
           currentItem
         });

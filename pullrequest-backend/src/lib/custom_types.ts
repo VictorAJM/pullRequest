@@ -88,6 +88,6 @@ export interface transferUpdateMessage {
     status: 'starting' | 'in_progress' | 'completed' | 'error',
     totalItems: number | undefined,
     currentItem: number | undefined,
-    currentSong: string | undefined,
+    current_song: string | undefined,
     failedItems?: PlaylistItem[]
 }

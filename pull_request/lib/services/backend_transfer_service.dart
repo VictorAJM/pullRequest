@@ -40,15 +40,16 @@ class BackendTransferService implements TransferRepository {
       );
     }
 
-    await for (final chunk
-        in sseResponse.stream.transform(utf8.decoder)) {
-      for (final line in chunk.split('\n')) {
-        final trimmed = line.trim();
-        if (!trimmed.startsWith('data: ')) continue;
+    await for (final line in sseResponse.stream
+        .transform(utf8.decoder)
+        .transform(const LineSplitter())) {
+      final trimmed = line.trim();
+      if (!trimmed.startsWith('data: ')) continue;
 
-        final jsonStr = trimmed.substring(6).trim();
-        if (jsonStr.isEmpty) continue;
+      final jsonStr = trimmed.substring(6).trim();
+      if (jsonStr.isEmpty) continue;
 
+      try {
         final data = jsonDecode(jsonStr) as Map<String, dynamic>;
         final progress = TransferProgress.fromJson(data);
         yield progress;
@@ -56,6 +57,8 @@ class BackendTransferService implements TransferRepository {
         if (progress.status == 'completed' || progress.status == 'error') {
           return;
         }
+      } catch (e) {
+        throw TransferException('Failed to parse update (length: ${jsonStr.length}): $e');
       }
     }
   }

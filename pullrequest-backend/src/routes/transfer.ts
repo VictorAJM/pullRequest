@@ -23,7 +23,7 @@ export const playlistTransferRoutes = new Elysia({ prefix: '/transfer' })
 
     activeTransfers.set(deviceId, {
       status: 'in_progress',
-      currentSong: '',
+      current_song: '',
       totalItems: 0,
       currentItem: 0,
     });
@@ -77,37 +77,46 @@ export const playlistTransferRoutes = new Elysia({ prefix: '/transfer' })
     const lastState = activeTransfers.get(deviceId);
     yield `data: ${JSON.stringify(lastState)}\n\n`;
 
+    const queue: any[] = [];
+    let resolveQueue: (() => void) | null = null;
+    let isFinished = false;
+
+    const listener = (data: any) => {
+      queue.push(data);
+      if (resolveQueue) {
+        resolveQueue();
+        resolveQueue = null;
+      }
+      if (data.status === 'completed' || data.status === 'error') {
+        isFinished = true;
+      }
+    };
+
+    sseBus.on(`update:${deviceId}`, listener);
+
     try {
-      while (activeTransfers.has(deviceId)) {
-        const nextEvent = await new Promise((resolve) => {
-          const listener = (data: any) => {
-            clearInterval(checkInterval);
-            resolve(data);
-          };
+      while (true) {
+        if (queue.length === 0 && !isFinished && activeTransfers.has(deviceId)) {
+          await Promise.race([
+            new Promise<void>((resolve) => { resolveQueue = resolve; }),
+            new Promise<void>((resolve) => setTimeout(resolve, 1000))
+          ]);
+        }
 
-          sseBus.once(`update:${deviceId}`, listener);
+        while (queue.length > 0) {
+          const nextEvent = queue.shift();
+          yield `data: ${JSON.stringify(nextEvent)}\n\n`;
+          if (nextEvent.status === 'completed' || nextEvent.status === 'error') {
+            return;
+          }
+        }
 
-          const checkInterval = setInterval(() => {
-            if (!activeTransfers.has(deviceId)) {
-              clearInterval(checkInterval);
-              sseBus.off(`update:${deviceId}`, listener);
-              resolve(null);
-            }
-          }, 500);
-        });
-
-        if (!nextEvent) break;
-
-        yield `data: ${JSON.stringify(nextEvent)}\n\n`;;
-
-        if (
-          (nextEvent as transferUpdateMessage).status === 'completed' ||
-          (nextEvent as transferUpdateMessage).status === 'error'
-        ) {
+        if (isFinished || !activeTransfers.has(deviceId)) {
           break;
         }
       }
     } finally {
+      sseBus.off(`update:${deviceId}`, listener);
       console.log(`Connection closed for ${deviceId}`);
     }
   });

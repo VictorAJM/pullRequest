@@ -35,10 +35,10 @@ class BackendAuthService implements AuthRepository {
     }
 
     // Send code to backend for token exchange.
-    final response = await _api.post('/oauth/register_code', body: {
-      'platform': platformId,
-      'code': code,
-    });
+    final response = await _api.post(
+      '/oauth/register_code',
+      body: {'platform': platformId, 'code': code},
+    );
 
     if (response.statusCode != 200) {
       throw AuthException(
@@ -59,8 +59,7 @@ class BackendAuthService implements AuthRepository {
     }
 
     final scopes = [AppConfig.googleScopes];
-    final serverAuth =
-        await user.authorizationClient.authorizeServer(scopes);
+    final serverAuth = await user.authorizationClient.authorizeServer(scopes);
     if (serverAuth == null) {
       throw AuthException('No server auth code received from Google');
     }

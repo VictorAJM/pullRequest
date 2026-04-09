@@ -44,7 +44,9 @@ class ApiClient {
   Future<http.StreamedResponse> getStream(String path) async {
     final request =
         http.Request('GET', Uri.parse('${AppConfig.backendUrl}$path'));
-    request.headers.addAll(await _authHeaders());
+    final authHdrs = await _authHeaders();
+    request.headers.addAll(authHdrs);
+    request.headers['Accept'] = 'text/event-stream';
     return _httpClient.send(request);
   }
 }

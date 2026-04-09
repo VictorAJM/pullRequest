@@ -73,6 +73,7 @@ export const playlistTransferRoutes = new Elysia({ prefix: '/transfer' })
     set.headers['Content-Type'] = 'text/event-stream';
     set.headers['Cache-Control'] = 'no-cache';
     set.headers['Connection'] = 'keep-alive';
+    set.headers['X-Accel-Buffering'] = 'no';
 
     const lastState = activeTransfers.get(deviceId);
     yield `data: ${JSON.stringify(lastState)}\n\n`;

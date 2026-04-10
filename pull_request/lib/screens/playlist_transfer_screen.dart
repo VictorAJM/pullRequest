@@ -227,13 +227,17 @@ class _PlaylistTransferScreenState extends State<PlaylistTransferScreen> {
     return Column(
       children: [
         if (progress?.currentThumbnail != null)
-          ClipRRect(
-            borderRadius: BorderRadius.circular(8),
-            child: Image.network(
-              progress!.currentThumbnail!,
-              width: 80,
-              height: 80,
-              fit: BoxFit.cover,
+          AnimatedSwitcher(
+            duration: const Duration(milliseconds: 250),
+            child: ClipRRect(
+              key: ValueKey(progress!.currentThumbnail!),
+              borderRadius: BorderRadius.circular(8),
+              child: Image.network(
+                progress.currentThumbnail!,
+                width: 80,
+                height: 80,
+                fit: BoxFit.cover,
+              ),
             ),
           ),
         if (progress?.currentThumbnail != null)
@@ -248,16 +252,20 @@ class _PlaylistTransferScreenState extends State<PlaylistTransferScreen> {
             ),
           ),
           const SizedBox(height: 4),
-          Text(
-            progress.currentSong!,
-            style: const TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: Colors.black87,
+          AnimatedSwitcher(
+            duration: const Duration(milliseconds: 250),
+            child: Text(
+              progress.currentSong!,
+              key: ValueKey(progress.currentSong!),
+              style: const TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Colors.black87,
+              ),
+              textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
             ),
-            textAlign: TextAlign.center,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
           ),
         ],
         const SizedBox(height: 24),
@@ -270,12 +278,6 @@ class _PlaylistTransferScreenState extends State<PlaylistTransferScreen> {
               fontSize: 16,
             ),
           ),
-        const SizedBox(height: 16),
-        Text(
-          'Please keep the app open during transfer.',
-          style: AppTextStyles.caption.copyWith(color: Colors.grey[600]),
-          textAlign: TextAlign.center,
-        ),
       ],
     );
   }

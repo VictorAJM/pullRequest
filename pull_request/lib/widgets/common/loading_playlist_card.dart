@@ -47,7 +47,7 @@ class _LoadingPlaylistCardState extends State<LoadingPlaylistCard>
             margin: const EdgeInsets.only(bottom: 12),
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: Theme.of(context).cardColor,
               borderRadius: BorderRadius.circular(12),
               border: Border.all(color: AppColors.lightBlue, width: 2),
             ),

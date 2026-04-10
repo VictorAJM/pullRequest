@@ -142,12 +142,17 @@ class _PlaylistTransferScreenState extends State<PlaylistTransferScreen> {
                   const SizedBox(height: 48),
                   _buildProgressCircle(provider),
                   const SizedBox(height: 48),
-                  if (provider.isCompleted)
-                    _buildCompletionSection(provider)
-                  else if (provider.hasError)
-                    _buildErrorSection(provider)
-                  else
-                    _buildProgressSection(provider),
+                  SizedBox(
+                    height: 280,
+                    child: Align(
+                      alignment: Alignment.topCenter,
+                      child: provider.isCompleted
+                          ? _buildCompletionSection(provider)
+                          : provider.hasError
+                              ? _buildErrorSection(provider)
+                              : _buildProgressSection(provider),
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -226,54 +231,66 @@ class _PlaylistTransferScreenState extends State<PlaylistTransferScreen> {
 
     return Column(
       children: [
-        if (progress?.currentThumbnail != null)
-          AnimatedSwitcher(
-            duration: const Duration(milliseconds: 250),
-            child: ClipRRect(
-              key: ValueKey(progress!.currentThumbnail!),
-              borderRadius: BorderRadius.circular(8),
-              child: Image.network(
-                progress.currentThumbnail!,
-                width: 80,
-                height: 80,
-                fit: BoxFit.cover,
-              ),
-            ),
-          ),
-        if (progress?.currentThumbnail != null)
-          const SizedBox(height: 16),
-        if (progress?.currentSong != null && progress!.currentSong!.isNotEmpty) ...[
-          const Text(
-            'Transferring:',
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-              color: Colors.black54,
-            ),
-          ),
-          const SizedBox(height: 4),
-          AnimatedSwitcher(
-            duration: const Duration(milliseconds: 250),
-            child: Text(
-              progress.currentSong!,
-              key: ValueKey(progress.currentSong!),
-              style: const TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: Colors.black87,
-              ),
-              textAlign: TextAlign.center,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-        ],
-        const SizedBox(height: 24),
+        SizedBox(
+          height: 96,
+          child: progress?.currentThumbnail != null
+              ? Column(
+                  children: [
+                    AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 250),
+                      child: ClipRRect(
+                        key: ValueKey(progress!.currentThumbnail!),
+                        borderRadius: BorderRadius.circular(8),
+                        child: Image.network(
+                          progress.currentThumbnail!,
+                          width: 80,
+                          height: 80,
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                  ],
+                )
+              : null,
+        ),
+        SizedBox(
+          height: 72,
+          child: (progress?.currentSong != null && progress!.currentSong!.isNotEmpty)
+              ? Column(
+                  children: [
+                    const Text(
+                      'Transferring:',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.grey,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 250),
+                      child: Text(
+                        progress.currentSong!,
+                        key: ValueKey(progress.currentSong!),
+                        style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        textAlign: TextAlign.center,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                )
+              : null,
+        ),
+        const SizedBox(height: 16),
         if (progress != null)
           Text(
             '${progress.currentItem} of ${progress.totalItems} songs',
             style: AppTextStyles.label.copyWith(
-              color: Colors.black87, 
               fontWeight: FontWeight.bold,
               fontSize: 16,
             ),

@@ -98,7 +98,7 @@ class _PlaylistSelectionScreenState extends State<PlaylistSelectionScreen> {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
-      color: AppColors.lightBlue,
+      color: Theme.of(context).colorScheme.surfaceContainerHighest,
       child: Row(
         children: [
           Image.asset(
@@ -115,7 +115,7 @@ class _PlaylistSelectionScreenState extends State<PlaylistSelectionScreen> {
               Text(
                 '$count playlists available',
                 style:
-                    AppTextStyles.caption.copyWith(color: Colors.grey[600]),
+                    AppTextStyles.caption.copyWith(color: Theme.of(context).textTheme.bodyMedium?.color?.withValues(alpha: 0.6)),
               ),
             ],
           ),
@@ -182,10 +182,10 @@ class _PlaylistSelectionScreenState extends State<PlaylistSelectionScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surface,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
+            color: Theme.of(context).shadowColor.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, -2),
           ),

@@ -10,7 +10,9 @@ class PullRequestApp extends StatelessWidget {
     return MaterialApp.router(
       title: 'PullRequest',
       debugShowCheckedModeBanner: false,
+      themeMode: ThemeMode.system,
       theme: AppTheme.light(),
+      darkTheme: AppTheme.dark(),
       routerConfig: appRouter,
     );
   }

@@ -91,4 +91,88 @@ class AppTheme {
       ),
     );
   }
+
+  static ThemeData dark() {
+    return ThemeData(
+      colorScheme: ColorScheme.fromSeed(
+        brightness: Brightness.dark,
+        seedColor: AppColors.primaryBlue,
+        background: const Color(0xFF282C34), 
+        surface: const Color(0xFF32363E),
+      ),
+      useMaterial3: true,
+      scaffoldBackgroundColor: const Color(0xFF282C34),
+      cardColor: const Color(0xFF32363E),
+
+      appBarTheme: const AppBarTheme(
+        backgroundColor: Color(0xFF21252B), 
+        elevation: 0,
+        centerTitle: true,
+        titleTextStyle: TextStyle(
+          color: Colors.white,
+          fontSize: 20,
+          fontWeight: FontWeight.w600,
+        ),
+        iconTheme: IconThemeData(color: Colors.white),
+      ),
+
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: AppColors.primaryBlue,
+          foregroundColor: Colors.white,
+          disabledBackgroundColor: const Color(0xFF4B5263),
+          disabledForegroundColor: Colors.grey,
+          elevation: 0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(28),
+          ),
+          minimumSize: const Size(double.infinity, 56),
+          textStyle: AppTextStyles.button,
+        ),
+      ),
+
+      outlinedButtonTheme: OutlinedButtonThemeData(
+        style: OutlinedButton.styleFrom(
+          foregroundColor: Colors.white,
+          side: const BorderSide(color: Color(0xFF4B5263)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(24),
+          ),
+        ),
+      ),
+
+      textButtonTheme: TextButtonThemeData(
+        style: TextButton.styleFrom(
+          foregroundColor: AppColors.primaryBlue,
+          textStyle: AppTextStyles.bodyMedium,
+        ),
+      ),
+
+      inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: const Color(0xFF21252B),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Color(0xFF4B5263), width: 2),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Color(0xFF4B5263), width: 2),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide:
+              const BorderSide(color: AppColors.primaryBlue, width: 2),
+        ),
+        hintStyle: const TextStyle(color: Colors.grey),
+      ),
+
+      dialogTheme: DialogThemeData(
+        backgroundColor: const Color(0xFF282C34),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        titleTextStyle: AppTextStyles.heading2.copyWith(color: Colors.white),
+        contentTextStyle: AppTextStyles.body.copyWith(color: Colors.white70),
+      ),
+    );
+  }
 }

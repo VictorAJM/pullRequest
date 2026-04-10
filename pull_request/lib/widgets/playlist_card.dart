@@ -24,10 +24,10 @@ class PlaylistCard extends StatelessWidget {
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: Theme.of(context).cardColor,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isSelected ? AppColors.primaryBlue : AppColors.lightBlue,
+            color: isSelected ? AppColors.primaryBlue : Theme.of(context).dividerColor,
             width: 2,
           ),
         ),
@@ -57,7 +57,6 @@ class PlaylistCard extends StatelessWidget {
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
-                      color: AppColors.darkBlue,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -66,12 +65,12 @@ class PlaylistCard extends StatelessWidget {
                   Row(
                     children: [
                       Icon(Icons.music_note,
-                          size: 14, color: Colors.grey[600]),
+                          size: 14, color: Theme.of(context).textTheme.bodyMedium?.color?.withValues(alpha: 0.6)),
                       const SizedBox(width: 4),
                       Text(
                         '${playlist.itemCount} tracks',
                         style: TextStyle(
-                            fontSize: 14, color: Colors.grey[600]),
+                            fontSize: 14, color: Theme.of(context).textTheme.bodyMedium?.color?.withValues(alpha: 0.6)),
                       ),
                     ],
                   ),

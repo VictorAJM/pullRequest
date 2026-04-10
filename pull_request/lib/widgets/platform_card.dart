@@ -26,10 +26,10 @@ class PlatformCard extends StatelessWidget {
         width: double.infinity,
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.primaryBlue : Colors.white,
+          color: isSelected ? AppColors.primaryBlue : Theme.of(context).cardColor,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isSelected ? AppColors.primaryBlue : AppColors.lightBlue,
+            color: isSelected ? AppColors.primaryBlue : Theme.of(context).dividerColor,
             width: 2,
           ),
         ),
@@ -52,7 +52,7 @@ class PlatformCard extends StatelessWidget {
                 fontWeight: FontWeight.w600,
                 color: isSelected
                     ? Colors.white
-                    : (isDisabled ? Colors.grey : AppColors.darkBlue),
+                    : (isDisabled ? Colors.grey : null),
               ),
             ),
             const Spacer(),

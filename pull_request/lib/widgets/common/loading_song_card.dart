@@ -47,7 +47,7 @@ class _LoadingSongCardState extends State<LoadingSongCard>
             margin: const EdgeInsets.only(bottom: 8),
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: Theme.of(context).cardColor,
               borderRadius: BorderRadius.circular(8),
               border: Border.all(color: AppColors.lightBlue, width: 1),
             ),

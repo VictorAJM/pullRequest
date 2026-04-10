@@ -76,11 +76,14 @@ class _PlaylistDetailsScreenState extends State<PlaylistDetailsScreen> {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [AppColors.lightBlue, AppColors.background],
+          colors: [
+            Theme.of(context).colorScheme.surfaceContainerHighest,
+            Theme.of(context).scaffoldBackgroundColor,
+          ],
         ),
       ),
       child: Column(

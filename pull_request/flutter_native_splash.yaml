@@ -1,0 +1,12 @@
+flutter_native_splash:
+  color: "#F9F7F7"
+  color_dark: "#282C34"
+  image: "assets/icons/pullRequest.png"
+  image_dark: "assets/icons/pullRequest.png"
+  android: true
+  ios: true
+  android_12:
+    color: "#F9F7F7"
+    color_dark: "#282C34"
+    image: "assets/icons/pullRequest_splash.png"
+    image_dark: "assets/icons/pullRequest_splash.png"
